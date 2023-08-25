@@ -4,25 +4,124 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:foregroundTintMode="add"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <fragment
-        android:id="@+id/nav_host_fragment_content_test"
-        android:name="androidx.navigation.fragment.NavHostFragment"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:defaultNavHost="true"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <ImageView
+        android:id="@+id/oak_grove"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="108dp"
+        android:contentDescription="@string/subway_stop"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:navGraph="@navigation/nav_graph2" />
+        app:srcCompat="@mipmap/train_stop" />
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/wellington"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:contentDescription="@string/subway_stop"
+        app:layout_constraintEnd_toEndOf="@+id/oak_grove_malden_center"
+        app:layout_constraintTop_toBottomOf="@+id/oak_grove_malden_center"
+        app:srcCompat="@mipmap/train_stop" />
+
+    <ImageView
+        android:id="@+id/assembly"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:contentDescription="@string/subway_stop"
+        app:layout_constraintEnd_toEndOf="@+id/wellington_assembly"
+        app:layout_constraintTop_toBottomOf="@+id/wellington_assembly"
+        app:srcCompat="@mipmap/train_stop" />
+
+    <ImageView
+        android:id="@+id/sullivan_square"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:contentDescription="@string/subway_stop"
+        app:layout_constraintEnd_toEndOf="@+id/assembly_sullivan_square"
+        app:layout_constraintTop_toBottomOf="@+id/assembly_sullivan_square"
+        app:srcCompat="@mipmap/train_stop" />
+
+    <ImageView
+        android:id="@+id/community_college"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:contentDescription="@string/subway_stop"
+        app:layout_constraintEnd_toEndOf="@+id/sullivan_square_community_college"
+        app:layout_constraintTop_toBottomOf="@+id/sullivan_square_community_college"
+        app:srcCompat="@mipmap/train_stop" />
+
+    <ImageView
+        android:id="@+id/malden_center"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/subway_stop"
+        app:layout_constraintEnd_toEndOf="@+id/oak_grove"
+        app:layout_constraintTop_toBottomOf="@+id/oak_grove"
+        app:srcCompat="@mipmap/train_stop" />
+
+    <ImageView
+        android:id="@+id/oak_grove_malden_center"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:contentDescription="@string/path_between_stops"
+        android:rotation="90"
+        app:layout_constraintEnd_toEndOf="@+id/malden_center"
+        app:layout_constraintTop_toBottomOf="@+id/malden_center"
+        app:srcCompat="@mipmap/train_path" />
+
+    <ImageView
+        android:id="@+id/wellington_assembly"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:contentDescription="@string/path_between_stops"
+        android:rotation="90"
+        app:layout_constraintEnd_toEndOf="@+id/wellington"
+        app:layout_constraintTop_toBottomOf="@+id/wellington"
+        app:srcCompat="@mipmap/train_path" />
+
+    <ImageView
+        android:id="@+id/assembly_sullivan_square"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:contentDescription="@string/path_between_stops"
+        android:rotation="90"
+        app:layout_constraintEnd_toEndOf="@+id/assembly"
+        app:layout_constraintTop_toBottomOf="@+id/assembly"
+        app:srcCompat="@mipmap/train_path" />
+
+    <ImageView
+        android:id="@+id/sullivan_square_community_college"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:contentDescription="@string/path_between_stops"
+        android:rotation="90"
+        app:layout_constraintEnd_toEndOf="@+id/sullivan_square"
+        app:layout_constraintTop_toBottomOf="@+id/sullivan_square"
+        app:srcCompat="@mipmap/train_path" />
+
+    <ImageView
+        android:id="@+id/malden_center_wellington"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:contentDescription="@string/path_between_stops"
+        android:rotation="90"
+        app:layout_constraintBottom_toTopOf="@+id/malden_center"
+        app:layout_constraintEnd_toEndOf="@+id/oak_grove"
+        app:layout_constraintTop_toBottomOf="@+id/oak_grove"
+        app:srcCompat="@mipmap/train_path" />
+
+    <androidx.constraintlayout.utils.widget.ImageFilterView
+        android:id="@+id/imageFilterView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@mipmap/train_stop"
-        tools:layout_editor_absoluteX="107dp"
-        tools:layout_editor_absoluteY="65dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@mipmap/train_path_foreground"
+        app:tint="#46FFF8" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

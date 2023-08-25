@@ -13,6 +13,11 @@
         android:theme="@style/Theme.TrainWatch"
         tools:targetApi="31">
         <activity
+            android:name=".NYCMap"
+            android:exported="false"
+            android:label="@string/title_activity_nycmap"
+            android:theme="@style/Theme.TrainWatch" />
+        <activity
             android:name=".TestActivity"
             android:exported="false"
             android:label="@string/title_activity_test"

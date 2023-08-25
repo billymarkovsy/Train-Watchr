@@ -12,25 +12,15 @@
     app:rowCount="25"
     tools:context=".MainActivity">
 
-    <ImageView
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="28dp"
-        android:contextClickable="false"
+    <com.trainwatch.SubwayMapView
+        android:id="@+id/nyc_subway"
+        android:layout_width="408dp"
+        android:layout_height="500dp"
+        android:layout_marginTop="100dp"
+        app:stopColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:srcCompat="@mipmap/train_path_foreground" />
-
-    <ImageView
-        android:id="@+id/imageView3"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="12dp"
-        android:contextClickable="false"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:srcCompat="@mipmap/train_path_foreground" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

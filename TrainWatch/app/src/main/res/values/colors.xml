@@ -7,4 +7,27 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="one_train">#AAEE352E</color>
+    <color name="two_train">#AAEE352E</color>
+    <color name="three_train">#AAEE352E</color>
+    <color name="four_train">#AA00933C</color>
+    <color name="five_train">#AA00933C</color>
+    <color name="six_train">#AA00933C</color>
+    <color name="seven_train">#AAB933AD</color>
+    <color name="a_train">#AA0039A6</color>
+    <color name="c_train">#AA0039A6</color>
+    <color name="e_train">#AA0039A6</color>
+    <color name="b_train">#AAFF6319</color>
+    <color name="d_train">#AAFF6319</color>
+    <color name="f_train">#AAFF6319</color>
+    <color name="m_train">#AAFF6319</color>
+    <color name="g_train">#AA6CBE45</color>
+    <color name="j_train">#AA996633</color>
+    <color name="z_train">#AA996633</color>
+    <color name="l_train">#AAA7A9AC</color>
+    <color name="n_train">#AAFCCC0A</color>
+    <color name="q_train">#AAFCCC0A</color>
+    <color name="r_train">#AAFCCC0A</color>
+    <color name="w_train">#AAFCCC0A</color>
+    <color name="shuttle">#AA808183</color>
 </resources>
