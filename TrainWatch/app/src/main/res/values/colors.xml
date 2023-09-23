@@ -7,6 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="empty_stop">#60C0C0C0</color>
     <color name="one_train">#AAEE352E</color>
     <color name="two_train">#AAEE352E</color>
     <color name="three_train">#AAEE352E</color>
@@ -30,4 +31,8 @@
     <color name="r_train">#AAFCCC0A</color>
     <color name="w_train">#AAFCCC0A</color>
     <color name="shuttle">#AA808183</color>
+    <color name="blue_line">#AA003DA5</color>
+    <color name="red_line">#AADA291C</color>
+    <color name="orange_line">#AAED8B00</color>
+    <color name="green_line">#AA00843D</color>
 </resources>

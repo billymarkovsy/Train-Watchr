@@ -12,15 +12,54 @@
     app:rowCount="25"
     tools:context=".MainActivity">
 
-    <com.trainwatch.SubwayMapView
-        android:id="@+id/nyc_subway"
-        android:layout_width="408dp"
-        android:layout_height="500dp"
-        android:layout_marginTop="100dp"
-        app:stopColor="@color/white"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:id="@+id/city_radio_button_group"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RadioButton
+            android:id="@+id/nyc_radio_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:onClick="onCityRadioButtonClick"
+            android:text="@string/city_nyc" />
+
+        <RadioButton
+            android:id="@+id/boston_radio_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onCityRadioButtonClick"
+            android:text="@string/city_boston" />
+    </RadioGroup>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/subway_fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="600dp"
+
+        android:layout_marginTop="120dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="100dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/map_legend_button_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
