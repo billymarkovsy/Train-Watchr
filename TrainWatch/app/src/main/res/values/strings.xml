@@ -50,50 +50,14 @@
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
     <string name="city_nyc">NYC</string>
-    <string name="city_boston">Boston</string>
+    <string name="city_boston">BOSTON</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <!-- NYC Coordinate mapping-->
-    <!--    <string name="G22N">(340,450)</string>-->
-    <!--    <string name="G22S">(345,450)</string>-->
-    <!--    <string name="G24N">(327,456)</string>-->
-    <!--    <string name="G24S">(332,456)</string>-->
-    <!--    <string name="G26N">(340,450)</string>-->
-    <!--    <string name="G26S">(340,450)</string>-->
-    <!--    <string name="G28N">(340,450)</string>-->
-    <!--    <string name="G28S">(340,450)</string>-->
-    <!--    <string name="G29N">(340,450)</string>-->
-    <!--    <string name="G29S">(340,450)</string>-->
-    <!--    <string name="G30N">(340,450)</string>-->
-    <!--    <string name="G30S">(340,450)</string>-->
-    <!--    <string name="G31N">(340,450)</string>-->
-    <!--    <string name="G31S">(340,450)</string>-->
-    <!--    <string name="G32N">(340,450)</string>-->
-    <!--    <string name="G32S">(340,450)</string>-->
-    <!--    <string name="G33N">(340,450)</string>-->
-    <!--    <string name="G33S">(340,450)</string>-->
-    <!--    <string name="G34N">(340,450)</string>-->
-    <!--    <string name="G34S">(340,450)</string>-->
-    <!--    <string name="G35N">(340,450)</string>-->
-    <!--    <string name="G35S">(340,450)</string>-->
-    <!--    <string name="G36N">(340,450)</string>-->
-    <!--    <string name="G36S">(340,450)</string>-->
-    <!--    <string name="A42N">(340,450)</string>-->
-    <!--    <string name="A42S">(340,450)</string>-->
-    <!--    <string name="F20N">(340,450)</string>-->
-    <!--    <string name="F20S">(340,450)</string>-->
-    <!--    <string name="F21N">(340,450)</string>-->
-    <!--    <string name="F21S">(340,450)</string>-->
-    <!--    <string name="F22N">(340,450)</string>-->
-    <!--    <string name="F22S">(340,450)</string>-->
-    <!--    <string name="F23N">(340,450)</string>-->
-    <!--    <string name="F23S">(340,450)</string>-->
-    <!--    <string name="F24N">(340,450)</string>-->
-    <!--    <string name="F24S">(340,450)</string>-->
-    <!--    <string name="F25N">(340,450)</string>-->
-    <!--    <string name="F25S">(340,450)</string>-->
-    <!--    <string name="F26N">(340,450)</string>-->
-    <!--    <string name="F26S">(340,450)</string>-->
-    <!--    <string name="F27N">(340,450)</string>-->
-    <!--    <string name="F27S">(340,450)</string>-->
+    <string name="mail_subheader_title">Mail</string>
+    <string name="header_title">Subways</string>
+    <string name="page_title">TrainWatch</string>
+    <string name="city_subheader_title">City</string>
+    <string name="more">More</string>
+    <string name="routes">Routes</string>
+
 </resources>

@@ -102,7 +102,6 @@ class SubwayMapView(context: Context, attrs: AttributeSet): View(context, attrs)
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         Log.i("TRAIN_TAG", "Refreshing...")
-        Log.i("TRAIN_TAG3", vehicles.filter { record -> record.key.endsWith("S", true) }.toString())
         canvas.apply {
             stops.forEach {s ->
                 val vehicles = getVehiclesAtStop(s.stopId)

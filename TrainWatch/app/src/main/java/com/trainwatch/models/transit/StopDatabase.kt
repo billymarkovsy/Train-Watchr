@@ -4,13 +4,14 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.trainwatch.Constants
 
 @Database(entities = [TransitStop::class], version=2)
 abstract class StopDatabase: RoomDatabase() {
     abstract fun transitStopDao(): TransitStopDao
     companion object: SingletonHolder<StopDatabase, Context>({
-        Room.databaseBuilder(it, StopDatabase::class.java, "stops.db")
-            .createFromAsset("nyc.db")
+        Room.databaseBuilder(it, StopDatabase::class.java, Constants.LOCAL_DATABASE_NAME)
+            .createFromAsset(Constants.ASSET_DATABASE_NAME)
             .fallbackToDestructiveMigration()
             .build()
     })

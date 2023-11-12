@@ -1,6 +1,5 @@
 package com.trainwatch.viewModels
 
-import android.util.Log
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
@@ -35,7 +34,6 @@ class NYCMapViewModel: SubwayMapViewModel() {
             var vehicles = urls.flatMap { url -> TransitClient.fetchVehicleData(url, apiKey) }
             if(routeSelector?.isNotEmpty() == true){
                 vehicles = vehicles.filter { v -> v.routeId in routeSelector }
-                Log.i("TRAIN_TAG", vehicles.toString())
             }
             vehicles
 

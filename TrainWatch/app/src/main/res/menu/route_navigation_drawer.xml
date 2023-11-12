@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/city_item"
+        android:title="@string/city_subheader_title">
+        <menu>
+            <item
+                android:id="@+id/nyc_button_item"
+                android:icon="@drawable/new_york_subway_map"
+                android:title="@string/city_nyc"
+                android:checkable="true"
+                android:checked="true"
+                android:onClick="onCityMenuItemClick"
+                />
+
+            <item
+                android:id="@+id/boston_button_item"
+                android:icon="@drawable/new_york_subway_map"
+                android:title="@string/city_boston"
+                android:checkable="true"
+                android:onClick="onCityMenuItemClick"
+                />
+
+        </menu>
+    </item>
+    <item
+        android:id="@+id/route_item"
+        android:title="@string/routes">
+        <menu>
+            <group android:id="@+id/route_group" android:checkableBehavior="all"/>
+        </menu>
+    </item>
+</menu>

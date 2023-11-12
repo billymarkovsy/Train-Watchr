@@ -25,9 +25,9 @@ class BostonMapViewModel: SubwayMapViewModel() {
     override suspend fun populateTrainData(apiKey: String, ioDispatcher: CoroutineDispatcher, routeSelector: Set<String>?)
     : Deferred<List<TransitVehicle>> = coroutineScope {
         viewModelScope.async(ioDispatcher){
-            val vehicles = TransitClient.fetchVehicleData(url, apiKey).filter { v -> v.routeId in validTrainRoutes }
-            routeSelector?.let { s ->
-                vehicles.filter { v -> v.routeId in s }
+            var vehicles = TransitClient.fetchVehicleData(url, apiKey).filter { v -> v.routeId in validTrainRoutes }
+            if(routeSelector?.isNotEmpty() == true){
+                vehicles = vehicles.filter { v -> v.routeId.uppercase() in routeSelector }
             }
             vehicles
 

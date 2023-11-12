@@ -11,7 +11,7 @@ object TransitClient{
 
     fun fetchVehicleData(url: URL, apiKey: String): List<TransitVehicle> {
         with(url.openConnection() as HttpURLConnection) {
-            this.setRequestProperty("x-api-key", apiKey)
+            this.setRequestProperty(Constants.X_API_KEY, apiKey)
             val message: FeedMessage = FeedMessage.parseFrom(this.inputStream)
 
             return message.entityList.mapNotNull { buildVehicle(it) }

@@ -24,31 +24,21 @@ object Constants {
     )
 
     //TAGS
-    const val MAIN_ACTIVITY_TAG = "TRAIN_TAG"
-    const val MBTA_REQUEST_CALLBACK_TAG  = "MBTA_CALLBACK_TAG"
-    const val MBTA_VIEW_MODEL_TAG = "MBTAViewModelTAG"
+    const val TRAIN_TAG = "TRAIN_TAG"
 
     //Bundle Keys
     const val CITY_KEY = "city"
     const val ROUTES_KEY = "routes"
+
+    //Database Values
+    const val ASSET_DATABASE_NAME = "nyc.db"
+    const val LOCAL_DATABASE_NAME = "stops.db"
 
     //REQUEST HEADER VALUES
     const val X_API_KEY = "x-api-key"
     const val ACCEPT = "Accept"
     const val JSON_API_FORMAT = "application/vnd.api+json"
     const val HTTP_GET_REQUEST = "GET"
-
-    //MBTA JSON Fields
-    const val DATA = "data"
-    const val ID = "id"
-    const val ATTRIBUTES = "attributes"
-    const val RELATIONSHIPS = "relationships"
-    const val ROUTE_ID = "routeId"
-    const val ROUTE = "route"
-    const val STOP_INFO = "stop"
-    const val STOP_ID = "stopId"
-    const val CURRENT_TRANSIT_STATUS = "current_status"
-    const val TRANSIT_STATUS_ID = "transitStatusId"
 
     //Async intervals
     const val REQUEST_STATUS =50L
