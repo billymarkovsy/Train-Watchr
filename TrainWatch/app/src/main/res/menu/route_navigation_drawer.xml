@@ -8,6 +8,7 @@
                 android:id="@+id/nyc_button_item"
                 android:icon="@drawable/new_york_subway_map"
                 android:title="@string/city_nyc"
+                android:textAppearance="?attr/textAppearanceHeadlineMedium"
                 android:checkable="true"
                 android:checked="true"
                 android:onClick="onCityMenuItemClick"
@@ -17,6 +18,7 @@
                 android:id="@+id/boston_button_item"
                 android:icon="@drawable/new_york_subway_map"
                 android:title="@string/city_boston"
+                android:textAppearance="?attr/textAppearanceHeadlineMedium"
                 android:checkable="true"
                 android:onClick="onCityMenuItemClick"
                 />

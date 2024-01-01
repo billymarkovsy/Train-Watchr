@@ -59,5 +59,7 @@
     <string name="city_subheader_title">City</string>
     <string name="more">More</string>
     <string name="routes">Routes</string>
+    <string name="route_menu">Route Menu</string>
+    <string name="filters">Filters</string>
 
 </resources>
