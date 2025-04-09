@@ -7,13 +7,64 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+    <Button
+        android:id="@+id/serverConnectButton"
+        android:layout_width="261dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="560dp"
+        android:text="@string/connect_to_trainwatchr_server"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/serverDataButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/send_data_to_trainwatchr_server"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/serverConnectButton" />
+
+    <ProgressBar
+        android:id="@+id/serverConnectProgressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.3"
+        app:layout_constraintStart_toEndOf="@+id/serverConnectButton"
+        app:layout_constraintTop_toTopOf="@+id/serverConnectButton" />
+
+    <ProgressBar
+        android:id="@+id/serverDataProgressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.319"
+        app:layout_constraintStart_toEndOf="@+id/serverDataButton"
+        app:layout_constraintTop_toTopOf="@+id/serverDataButton" />
+
+    <ImageView
+        android:id="@+id/serverConnectStatus"
+        android:layout_width="48dp"
+        android:layout_height="49dp"
+        android:layout_marginStart="80dp"
+        app:layout_constraintStart_toEndOf="@+id/serverConnectButton"
+        app:layout_constraintTop_toTopOf="@+id/serverConnectButton"
+        app:srcCompat="@android:drawable/presence_online" />
+
+    <ImageView
+        android:id="@+id/serverDataStatus"
+        android:layout_width="48dp"
+        android:layout_height="49dp"
+        android:layout_marginStart="80dp"
+        app:layout_constraintStart_toEndOf="@+id/serverDataButton"
+        app:layout_constraintTop_toTopOf="@+id/serverDataButton"
+        app:srcCompat="@android:drawable/presence_online" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

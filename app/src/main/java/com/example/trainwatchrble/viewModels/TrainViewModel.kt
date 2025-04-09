@@ -17,7 +17,6 @@ class TrainViewModel: ViewModel() {
     suspend fun fetchTrains(url: URL): Deferred<List<Train>> = coroutineScope {
         viewModelScope.async (Dispatchers.IO) {
             var trains = TrainAPIClient.fetchVehicleData(url, "8f9cb5ae161b4cce8a7e9b831dc023ce")
-            Log.i("Trains", "test3")
             trains.forEach { Log.i("Trains", it.toString()) }
             trains
         }

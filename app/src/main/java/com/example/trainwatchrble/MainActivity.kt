@@ -1,6 +1,7 @@
 package com.example.trainwatchrble
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
@@ -16,20 +17,19 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.View
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.ProgressBar
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.example.trainwatchrble.viewModels.TrainViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.net.URL
@@ -37,6 +37,13 @@ import java.net.URL
 import java.util.UUID
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var connectToServerButton: Button
+    private lateinit var sendDataToServerButton: Button
+    private lateinit var connectToServerLoader: ProgressBar
+    private lateinit var sendDataToServerLoader: ProgressBar
+    private lateinit var connectToServerStatus: ImageView
+    private lateinit var sendDataToServerStatus: ImageView
 
     private val STATE_CONNECTED = 0
     private val STATE_DISCONNECTED = 2
@@ -48,13 +55,15 @@ class MainActivity : AppCompatActivity() {
 
     private val trainViewModel: TrainViewModel by viewModels()
 
-    private var scanning = false;
+    private var scanning = false
+    private var connecting = false
     private var discovered = false;
     private var connectionState = STATE_DISCONNECTED
 
     private var dataJob: Job? = null
     private val DATA_DELAY = 5000L
 
+    @SuppressLint("MissingPermission")
     @RequiresPermission(value = "android. permission. BLUETOOTH_SCAN")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,13 +75,35 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        connectToServerButton = findViewById(R.id.serverConnectButton)
+        sendDataToServerButton = findViewById(R.id.serverDataButton)
+        connectToServerLoader = findViewById(R.id.serverConnectProgressBar)
+        sendDataToServerLoader = findViewById(R.id.serverDataProgressBar)
+        connectToServerStatus = findViewById(R.id.serverConnectStatus)
+        sendDataToServerStatus = findViewById(R.id.serverDataStatus)
 
+        sendDataToServerLoader.visibility = View.GONE
+        connectToServerLoader.visibility = View.GONE
+        sendDataToServerStatus.visibility = View.GONE
+        connectToServerStatus.visibility = View.GONE
+
+        connectToServerButton.setOnClickListener { _ ->
+            connectToServerLoader.visibility = View.VISIBLE
+            connectToServerStatus.visibility = View.GONE
+            connectToServer()
+        }
+
+        sendDataToServerButton.setOnClickListener @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT) { _ ->
+            sendDataToServer()
+        }
+    }
+
+    private fun connectToServer() {
         val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
         val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.adapter
         bluetoothLeScanner = bluetoothAdapter?.bluetoothLeScanner!!
 
         val handler = Handler(Looper.getMainLooper())
-
 
         if (!scanning &&
             this.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) { // Stops scanning after a pre-defined scan period.
@@ -81,10 +112,8 @@ class MainActivity : AppCompatActivity() {
                 scanning = false
                 bluetoothLeScanner.stopScan(leScanCallback)
 
-                if (::bluetoothDevice.isInitialized)
-                    bluetoothDevice.connectGatt(this, true, leGattCallback)
-                else
-                    Log.i("BLE", "Unable to connect Bluetooth device")
+                connectToServerLoader.visibility = View.GONE
+                connectToServerStatus.visibility = View.VISIBLE
 
             }, SCAN_PERIOD)
             scanning = true
@@ -95,7 +124,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private fun sendDataToServer() {
+        if (::bluetoothDevice.isInitialized)
+            bluetoothDevice.connectGatt(this, true, leGattCallback)
+        else
+            Log.i("BLE", "Unable to connect Bluetooth device")
+    }
     private val leScanCallback: ScanCallback = object : ScanCallback() {
 
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -110,7 +145,6 @@ class MainActivity : AppCompatActivity() {
                 discovered = true
                 if (!this@MainActivity::bluetoothDevice.isInitialized)
                     bluetoothDevice = result.device
-                    //bluetoothGatt = result.device.connectGatt(this@MainActivity, true, leGattCallback)
             }
         }
     }
@@ -137,25 +171,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("MissingPermission")
     fun dataLoop(gatt: BluetoothGatt?){
         stopUpdates()
         dataJob = lifecycleScope.launch @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT) {
             while(true) {
-                var data = getData()
-                trainViewModel.fetchTrains(url)
+                sendDataToServerLoader.visibility = View.VISIBLE
+                sendDataToServerStatus.visibility = View.GONE
+
+                val trains = trainViewModel.fetchTrains(url).await()
+                val leds = trains.map { it.getChipLEDId() }.filter { it > 0 }
                 val service = gatt?.getService(UUID.fromString("000000ff-0000-1000-8000-00805f9b34fb"))
                 Log.d("BLE", "$service@")
                 val characteristic = service?.getCharacteristic(UUID.fromString("0000ff01-0000-1000-8000-00805f9b34fb"))
                 Log.d("BLE", "$characteristic#")
+                val data = leds.toByteArray()
+                Log.i("BLE", data.toString())
                 val res = gatt?.writeCharacteristic(characteristic!!, data, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
                 Log.i("BLE", "Status Response: $res")
+
+                sendDataToServerLoader.visibility = View.GONE
+                sendDataToServerStatus.visibility = View.VISIBLE
+
                 delay(DATA_DELAY)
             }
         }
-    }
-
-    fun getData(): ByteArray {
-        return ByteArray(3) { (Math.random()*255).toInt().toByte(); (Math.random()*255).toInt().toByte(); (Math.random()*255).toInt().toByte(); }
     }
 
     fun stopUpdates(){

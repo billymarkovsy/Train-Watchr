@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TrainWatchrBLE</string>
+    <string name="connect_to_trainwatchr_server">Connect To TrainWatchr Server</string>
+    <string name="send_data_to_trainwatchr_server">Send Data To TrainWatchr Server</string>
 </resources>

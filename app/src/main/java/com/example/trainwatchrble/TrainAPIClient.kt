@@ -22,7 +22,6 @@ object TrainAPIClient {
         return if (e.hasVehicle() && e.vehicle.hasTrip()){
             val vehicle = e.vehicle
             val routeId = vehicle.trip.routeId
-            val tripId = vehicle.trip.tripId
             val directionId = vehicle.trip.directionId
             Train(vehicle.stopId, vehicle.currentStatus, routeId, directionId)
         } else null
