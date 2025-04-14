@@ -1,11 +1,18 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+
 }
 
 android {
     namespace = "com.example.trainwatchrble"
     compileSdk = 35
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     defaultConfig {
         applicationId = "com.example.trainwatchrble"
@@ -15,6 +22,18 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val keyStore = project.rootProject.file("local.properties")
+        val properties = Properties()
+        properties.load(keyStore.inputStream())
+
+        //return empty key in case something goes wrong
+        val apiKey = properties.getProperty("API_KEY") ?: ""
+        buildConfigField(
+            type = "String",
+            name = "API_KEY",
+            value = apiKey
+        )
     }
 
     buildTypes {

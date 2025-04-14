@@ -28,11 +28,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.example.trainwatchrble.models.Train
+import com.example.trainwatchrble.models.TrainWatchrCharacteristic
+import com.example.trainwatchrble.util.Constants
 import com.example.trainwatchrble.viewModels.TrainViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.net.URL
+import java.util.LinkedList
+import java.util.Queue
 
 import java.util.UUID
 
@@ -47,21 +51,20 @@ class MainActivity : AppCompatActivity() {
 
     private val STATE_CONNECTED = 0
     private val STATE_DISCONNECTED = 2
-    private val SCAN_PERIOD: Long = 3000
-    private val url = URL("https://cdn.mbta.com/realtime/VehiclePositions.pb")
 
     private lateinit var bluetoothDevice: BluetoothDevice
     private lateinit var bluetoothLeScanner: BluetoothLeScanner
+    private lateinit var bluetoothGatt: BluetoothGatt
 
     private val trainViewModel: TrainViewModel by viewModels()
 
     private var scanning = false
-    private var connecting = false
-    private var discovered = false;
+    //private var connecting = false
+    private var discovered = false
     private var connectionState = STATE_DISCONNECTED
 
     private var dataJob: Job? = null
-    private val DATA_DELAY = 5000L
+    private val queue: Queue<TrainWatchrCharacteristic> = LinkedList()
 
     @SuppressLint("MissingPermission")
     @RequiresPermission(value = "android. permission. BLUETOOTH_SCAN")
@@ -115,7 +118,7 @@ class MainActivity : AppCompatActivity() {
                 connectToServerLoader.visibility = View.GONE
                 connectToServerStatus.visibility = View.VISIBLE
 
-            }, SCAN_PERIOD)
+            }, Constants.BLE_SCAN_PERIOD)
             scanning = true
             bluetoothLeScanner.startScan(leScanCallback)
         } else {
@@ -127,7 +130,7 @@ class MainActivity : AppCompatActivity() {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun sendDataToServer() {
         if (::bluetoothDevice.isInitialized)
-            bluetoothDevice.connectGatt(this, true, leGattCallback)
+            bluetoothGatt = bluetoothDevice.connectGatt(this, true, leGattCallback)
         else
             Log.i("BLE", "Unable to connect Bluetooth device")
     }
@@ -139,8 +142,8 @@ class MainActivity : AppCompatActivity() {
             if (discovered)
                 return
             Log.d("BLE", result.device.name ?: "")
-            if (result.device.name == "ESP_GATTS_DEMO") {
-                Log.i("BLE", "Found TrainWatchr Server!");
+            if (result.device.name == Constants.TRAIN_WATCHR_DEVICE_NAME) {
+                Log.i("BLE", "Found TrainWatchr Server!")
                 scanning = false
                 discovered = true
                 if (!this@MainActivity::bluetoothDevice.isInitialized)
@@ -167,39 +170,68 @@ class MainActivity : AppCompatActivity() {
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             super.onServicesDiscovered(gatt, status)
-            dataLoop(gatt)
+            dataLoop()
+        }
+
+        @SuppressLint("MissingPermission")
+        override fun onCharacteristicWrite(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic?,
+            status: Int
+        ) {
+            super.onCharacteristicWrite(gatt, characteristic, status)
+            val nextChar: TrainWatchrCharacteristic? = queue.poll()
+            Log.i("BLE", "Characteristic write complete")
+            if(nextChar != null){
+                Log.i("BLE", "Queueing next characteristic write")
+                writeData(nextChar)
+            } else {
+                Log.i("BLE", "No more characteristics to write, waiting for refresh")
+            }
         }
     }
 
     @SuppressLint("MissingPermission")
-    fun dataLoop(gatt: BluetoothGatt?){
+    fun dataLoop(){
         stopUpdates()
         dataJob = lifecycleScope.launch @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT) {
             while(true) {
                 sendDataToServerLoader.visibility = View.VISIBLE
                 sendDataToServerStatus.visibility = View.GONE
 
-                val trains = trainViewModel.fetchTrains(url).await()
-                val leds = trains.map { it.getChipLEDId() }.filter { it > 0 }
-                val service = gatt?.getService(UUID.fromString("000000ff-0000-1000-8000-00805f9b34fb"))
-                Log.d("BLE", "$service@")
-                val characteristic = service?.getCharacteristic(UUID.fromString("0000ff01-0000-1000-8000-00805f9b34fb"))
-                Log.d("BLE", "$characteristic#")
-                val data = leds.toByteArray()
-                Log.i("BLE", data.toString())
-                val res = gatt?.writeCharacteristic(characteristic!!, data, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
-                Log.i("BLE", "Status Response: $res")
+                val trains: List<Train> = trainViewModel.fetchTrains(Constants.MBTA_URL).await()
+                val ledMap: Map<String, List<Byte>> = Train.mapLinesToBytes(trains)
+
+                queue.addAll(listOf(
+                    TrainWatchrCharacteristic(Constants.RED_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.RED_LINE, emptyList())),
+                    TrainWatchrCharacteristic(Constants.BLUE_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.BLUE_LINE, emptyList())),
+//                    TrainWatchrCharacteristic("Green", Constants.GREEN_LINE_CHARACTERISTIC),
+                    TrainWatchrCharacteristic(Constants.ORANGE_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.ORANGE_LINE, emptyList()))
+                ))
+
+                val characteristic: TrainWatchrCharacteristic = queue.remove()
+                writeData(characteristic)
 
                 sendDataToServerLoader.visibility = View.GONE
                 sendDataToServerStatus.visibility = View.VISIBLE
 
-                delay(DATA_DELAY)
+                delay(Constants.TRAIN_DATA_REFRESH)
             }
         }
     }
 
-    fun stopUpdates(){
+    private fun stopUpdates(){
         dataJob?.cancel()
         dataJob = null
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private fun writeData(lineCharacteristic: TrainWatchrCharacteristic) {
+        val service = bluetoothGatt.getService(UUID.fromString(Constants.SERVER_ID))
+        val characteristic: BluetoothGattCharacteristic? = service?.getCharacteristic(lineCharacteristic.uuid)
+        val data = lineCharacteristic.data
+        Log.i("BLE", "Writing following data for ${lineCharacteristic.name}: $data")
+        val res = bluetoothGatt.writeCharacteristic(characteristic!!, data.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+        Log.i("BLE", "Status Response: $res")
     }
 }
