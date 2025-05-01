@@ -200,13 +200,13 @@ class MainActivity : AppCompatActivity() {
                 sendDataToServerStatus.visibility = View.GONE
 
                 val trains: List<Train> = trainViewModel.fetchTrains(Constants.MBTA_URL).await()
-                val ledMap: Map<String, List<Byte>> = Train.mapLinesToBytes(trains)
+                val ledMap: Map<String, Set<Byte>> = Train.mapLinesToBytes(trains)
 
                 queue.addAll(listOf(
-                    TrainWatchrCharacteristic(Constants.RED_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.RED_LINE, emptyList())),
-                    TrainWatchrCharacteristic(Constants.BLUE_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.BLUE_LINE, emptyList())),
+                    TrainWatchrCharacteristic(Constants.RED_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.RED_LINE, emptySet())),
+                    TrainWatchrCharacteristic(Constants.BLUE_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.BLUE_LINE, emptySet())),
 //                    TrainWatchrCharacteristic("Green", Constants.GREEN_LINE_CHARACTERISTIC),
-                    TrainWatchrCharacteristic(Constants.ORANGE_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.ORANGE_LINE, emptyList()))
+                    TrainWatchrCharacteristic(Constants.ORANGE_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.ORANGE_LINE, emptySet()))
                 ))
 
                 val characteristic: TrainWatchrCharacteristic = queue.remove()
@@ -230,7 +230,7 @@ class MainActivity : AppCompatActivity() {
         val service = bluetoothGatt.getService(UUID.fromString(Constants.SERVER_ID))
         val characteristic: BluetoothGattCharacteristic? = service?.getCharacteristic(lineCharacteristic.uuid)
         val data = lineCharacteristic.data
-        Log.i("BLE", "Writing following data for ${lineCharacteristic.name}: $data")
+        Log.i("BLE", "Writing following data for ${lineCharacteristic.name}: ${data.map { it.toInt() }}")
         val res = bluetoothGatt.writeCharacteristic(characteristic!!, data.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
         Log.i("BLE", "Status Response: $res")
     }

@@ -9,38 +9,69 @@ import com.example.trainwatchrble.models.stations.OrangeStations.*
 import com.example.trainwatchrble.util.Constants
 import com.google.transit.realtime.GtfsRealtime.VehiclePosition.VehicleStopStatus
 import com.google.transit.realtime.GtfsRealtime.VehiclePosition.VehicleStopStatus.*
+import kotlin.math.ceil
 
 data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val routeId: String, val directionId: Int) {
 
-    fun getChipLEDId(): List<Byte>{
+    fun getChipLEDId(): Set<Byte>{
         return when(routeId){
             Constants.BLUE_LINE -> blueLineMapping(stopId, directionId, stopStatus)
             Constants.ORANGE_LINE -> orangeLineMapping(stopId, directionId, stopStatus)
             Constants.RED_LINE, Constants.MATTAPAN_LINE -> redLineMapping(stopId, directionId, stopStatus)
-            else -> return emptyList()
+            else -> return emptySet()
         }
     }
 
     companion object {
 
-        fun mapLinesToBytes(trains: List<Train>): Map<String, List<Byte>>{
+        fun mapLinesToBytes(trains: List<Train>): Map<String, Set<Byte>>{
 
-            val map: Map<String, MutableList<Byte>> = mapOf(
-                Pair(Constants.BLUE_LINE, mutableListOf()),
-                Pair(Constants.ORANGE_LINE, mutableListOf()),
-                Pair(Constants.RED_LINE, mutableListOf()),
-                Pair(Constants.GREEN_LINE, mutableListOf())
+            val stationIndexMap: Map<String, MutableSet<Byte>> = mapOf(
+                Pair(Constants.BLUE_LINE, mutableSetOf()),
+                Pair(Constants.ORANGE_LINE, mutableSetOf()),
+                Pair(Constants.RED_LINE, mutableSetOf()),
+                Pair(Constants.GREEN_LINE, mutableSetOf())
             )
 
             trains.forEach {
                 val bytes = it.getChipLEDId()
-                map[it.routeId]?.addAll(bytes)
+                stationIndexMap[it.routeId]?.addAll(bytes)
             }
 
-            return map
+            val stationByteArrayMap: MutableMap<String, ByteArray> = mutableMapOf()
+            stationIndexMap.forEach {
+                val count = when(it.key){
+                    Constants.ORANGE_LINE -> Constants.ORANGE_LINE_STATION_COUNT
+                    Constants.GREEN_LINE -> 1
+                    Constants.BLUE_LINE -> Constants.BLUE_LINE_STATION_COUNT
+                    Constants.RED_LINE -> Constants.RED_LINE_STATION_COUNT
+                    else -> throw IllegalArgumentException("Unknown Line specified")
+                }
+                stationByteArrayMap[it.key] = mapToByteArray(count, it.value)
+            }
+            return stationIndexMap
         }
 
-        private fun blueLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): List<Byte> {
+        private fun mapToByteArray(stationCount: Int, stationIndices: Set<Byte>): ByteArray{
+            val roundedByteCount: Int = Constants.toNearestPowerOf8(stationCount)
+            val byteArrayLength: Int = ceil(roundedByteCount/8.0).toInt()
+            Log.i("BLE", "ByteCount: $roundedByteCount | ArrayLength: $byteArrayLength")
+            //var result = 0b0
+            val result: Array<Int> = Array(byteArrayLength) { 0 }
+            for (i in 0..roundedByteCount){
+                if(stationIndices.contains(i.toByte())){
+                    val index: Int = i/8
+                    val bit = (0b1 shl i%8)
+                    Log.i("BLE", "Index: $index bit: $bit")
+                    result[index] = result[index] or bit
+                    Log.i("BLE", "Result: ${result[index]}")
+                }
+            }
+            Log.i("BLE", "Bit array: ${result.toList()}")
+            return result.map { it.toByte() }.toByteArray()
+        }
+
+        private fun blueLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): Set<Byte> {
             //West -> Bowdoin (0)
             //East -> Wonderland (1)
 
@@ -50,47 +81,51 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                 else -> throw IllegalArgumentException("Unknown directionId $directionId")
             }
 
-            val base: List<Byte> = when(stopId) {
+            val base: Set<Byte> = when(stopId) {
 
-                "70838" -> listOf(BOWDOIN_WEST.led)
-                "70039" -> listOf(GOVT_CENTER_WEST.led)
-                "70041" -> listOf(STATE_WEST.led)
-                "70043" -> listOf(AQUARIUM_WEST.led)
-                "70045" -> listOf(MAVERICK_WEST.led)
-                "70047" -> listOf(AIRPORT_WEST.led)
-                "70049" -> listOf(WOOD_ISLAND_WEST.led)
-                "70051" -> listOf(ORIENT_HEIGHTS_WEST.led)
-                "70053" -> listOf(SUFFOLK_DOWNS_WEST.led)
-                "70055" -> listOf(BEACHMONT_WEST.led)
-                "70057" -> listOf(REVERE_BEACH_WEST.led)
-                "70059" -> listOf(WONDERLAND_WEST.led)
+                "70838" -> setOf(BOWDOIN_WEST.led)
+                "70039" -> setOf(GOVT_CENTER_WEST.led)
+                "70041" -> setOf(STATE_WEST.led)
+                "70043" -> setOf(AQUARIUM_WEST.led)
+                "70045" -> setOf(MAVERICK_WEST.led)
+                "70047" -> setOf(AIRPORT_WEST.led)
+                "70049" -> setOf(WOOD_ISLAND_WEST.led)
+                "70051" -> setOf(ORIENT_HEIGHTS_WEST.led)
+                "70053" -> setOf(SUFFOLK_DOWNS_WEST.led)
+                "70055" -> setOf(BEACHMONT_WEST.led)
+                "70057" -> setOf(REVERE_BEACH_WEST.led)
+                "70059" -> setOf(WONDERLAND_WEST.led)
 
-                "70038" -> listOf(BOWDOIN_EAST.led)
-                "70040" -> listOf(GOVT_CENTER_EAST.led)
-                "70042" -> listOf(STATE_EAST.led)
-                "70044" -> listOf(AQUARIUM_EAST.led)
-                "70046" -> listOf(MAVERICK_EAST.led)
-                "70048" -> listOf(AIRPORT_EAST.led)
-                "70050" -> listOf(WOOD_ISLAND_EAST.led)
-                "70052" -> listOf(ORIENT_HEIGHTS_EAST.led)
-                "70054" -> listOf(SUFFOLK_DOWNS_EAST.led)
-                "70056" -> listOf(BEACHMONT_EAST.led)
-                "70058" -> listOf(REVERE_BEACH_EAST.led)
-                "70060" -> listOf(WONDERLAND_EAST.led)
+                "70038" -> setOf(BOWDOIN_EAST.led)
+                "70040" -> setOf(GOVT_CENTER_EAST.led)
+                "70042" -> setOf(STATE_EAST.led)
+                "70044" -> setOf(AQUARIUM_EAST.led)
+                "70046" -> setOf(MAVERICK_EAST.led)
+                "70048" -> setOf(AIRPORT_EAST.led)
+                "70050" -> setOf(WOOD_ISLAND_EAST.led)
+                "70052" -> setOf(ORIENT_HEIGHTS_EAST.led)
+                "70054" -> setOf(SUFFOLK_DOWNS_EAST.led)
+                "70056" -> setOf(BEACHMONT_EAST.led)
+                "70058" -> setOf(REVERE_BEACH_EAST.led)
+                "70060" -> setOf(WONDERLAND_EAST.led)
 
                 else -> {
                     Log.i("BLE", "Unknown stopId $stopId")
-                    emptyList()
+                    emptySet()
                 }
             }
 
             return when(stopStatus){
                 STOPPED_AT -> base
-                IN_TRANSIT_TO, INCOMING_AT -> base.map { (it +directionOffset).toByte() }
+                IN_TRANSIT_TO, INCOMING_AT -> when(stopId){
+                    "70045" -> return setOf((MAVERICK_WEST.led+1).toByte(), (MAVERICK_WEST.led+2).toByte())
+                    "70044" -> return setOf((AQUARIUM_EAST.led-1).toByte(), (AQUARIUM_EAST.led-2).toByte())
+                    else -> base.map { (it +directionOffset).toByte() }.toSet()
+                }
             }
         }
 
-        private fun orangeLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): List<Byte> {
+        private fun orangeLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): Set<Byte> {
 
             val directionOffset = when(directionId){
                 0 -> -1
@@ -98,72 +133,72 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                 else -> throw IllegalArgumentException("Unknown direction id $directionId")
             }
 
-            val base: List<Byte> = when(stopId) {
-                "70001" -> listOf(FOREST_HILLS_SOUTH.led, FOREST_HILLS_NORTH.led)
-                "70036" -> listOf(OAKGROVE_SOUTH.led, OAKGROVE_NORTH.led)
-                "Forest Hills-01" -> listOf(FOREST_HILLS_NORTH.led, FOREST_HILLS_SOUTH.led)
-                "Forest Hills-02" -> listOf(FOREST_HILLS_NORTH.led, FOREST_HILLS_SOUTH.led)
-                "Oak Grove-01" -> listOf(OAKGROVE_NORTH.led, OAKGROVE_SOUTH.led)
-                "Oak Grove-02" -> listOf(OAKGROVE_NORTH.led, OAKGROVE_SOUTH.led)
+            val base: Set<Byte> = when(stopId) {
+                "70001" -> setOf(FOREST_HILLS_SOUTH.led, FOREST_HILLS_NORTH.led)
+                "70036" -> setOf(OAKGROVE_SOUTH.led, OAKGROVE_NORTH.led)
+                "Forest Hills-01" -> setOf(FOREST_HILLS_NORTH.led, FOREST_HILLS_SOUTH.led)
+                "Forest Hills-02" -> setOf(FOREST_HILLS_NORTH.led, FOREST_HILLS_SOUTH.led)
+                "Oak Grove-01" -> setOf(OAKGROVE_NORTH.led, OAKGROVE_SOUTH.led)
+                "Oak Grove-02" -> setOf(OAKGROVE_NORTH.led, OAKGROVE_SOUTH.led)
 
                 // SouthBound
-                "70002" -> listOf(GREEN_STREET_SOUTH.led)
-                "70004" -> listOf(STONY_BROOK_SOUTH.led)
-                "70006" -> listOf(JACKSON_SQUARE_SOUTH.led)
-                "70008" -> listOf(ROXBURY_CROSSING_SOUTH.led)
-                "70010" -> listOf(RUGGLES_SOUTH.led)
-                "70012" -> listOf(MASS_AVE_SOUTH.led)
-                "70014" -> listOf(BACK_BAY_SOUTH.led)
-                "70016" -> listOf(TUFTS_SOUTH.led)
-                "70018" -> listOf(CHINATOWN_SOUTH.led)
-                "70020" -> listOf(OrangeStations.DOWNTOWN_CROSSING_SOUTH.led)
-                "70022" -> listOf(STATE_SOUTH.led)
-                "70024" -> listOf(HAYMARKET_SOUTH.led)
-                "70026" -> listOf(NORTH_STATION_SOUTH.led)
-                "70028" -> listOf(COMMUNITY_COLLEGE_SOUTH.led)
-                "70030" -> listOf(SULLIVAN_SQUARE_SOUTH.led)
-                "70278" -> listOf(ASSEMBLY_SOUTH.led)
-                "70032" -> listOf(WELLINGTON_SOUTH.led)
-                "70034" -> listOf(MALDEN_CENTER_SOUTH.led)
+                "70002" -> setOf(GREEN_STREET_SOUTH.led)
+                "70004" -> setOf(STONY_BROOK_SOUTH.led)
+                "70006" -> setOf(JACKSON_SQUARE_SOUTH.led)
+                "70008" -> setOf(ROXBURY_CROSSING_SOUTH.led)
+                "70010" -> setOf(RUGGLES_SOUTH.led)
+                "70012" -> setOf(MASS_AVE_SOUTH.led)
+                "70014" -> setOf(BACK_BAY_SOUTH.led)
+                "70016" -> setOf(TUFTS_SOUTH.led)
+                "70018" -> setOf(CHINATOWN_SOUTH.led)
+                "70020" -> setOf(OrangeStations.DOWNTOWN_CROSSING_SOUTH.led)
+                "70022" -> setOf(STATE_SOUTH.led)
+                "70024" -> setOf(HAYMARKET_SOUTH.led)
+                "70026" -> setOf(NORTH_STATION_SOUTH.led)
+                "70028" -> setOf(COMMUNITY_COLLEGE_SOUTH.led)
+                "70030" -> setOf(SULLIVAN_SQUARE_SOUTH.led)
+                "70278" -> setOf(ASSEMBLY_SOUTH.led)
+                "70032" -> setOf(WELLINGTON_SOUTH.led)
+                "70034" -> setOf(MALDEN_CENTER_SOUTH.led)
 
                 // NorthBound
-                "70003" -> listOf(GREEN_STREET_NORTH.led)
-                "70005" -> listOf(STONY_BROOK_NORTH.led)
-                "70007" -> listOf(JACKSON_SQUARE_NORTH.led)
-                "70009" -> listOf(ROXBURY_CROSSING_NORTH.led)
-                "70011" -> listOf(RUGGLES_NORTH.led)
-                "70013" -> listOf(MASS_AVE_NORTH.led)
-                "70015" -> listOf(BACK_BAY_NORTH.led)
-                "70017" -> listOf(TUFTS_NORTH.led)
-                "70019" -> listOf(CHINATOWN_NORTH.led)
-                "70021" -> listOf(OrangeStations.DOWNTOWN_CROSSING_NORTH.led)
-                "70023" -> listOf(STATE_NORTH.led)
-                "70025" -> listOf(HAYMARKET_NORTH.led)
-                "70027" -> listOf(NORTH_STATION_NORTH.led)
-                "70029" -> listOf(COMMUNITY_COLLEGE_NORTH.led)
-                "70031" -> listOf(SULLIVAN_SQUARE_NORTH.led)
-                "70279" -> listOf(ASSEMBLY_NORTH.led)
-                "70033" -> listOf(WELLINGTON_NORTH.led)
-                "70035" -> listOf(MALDEN_CENTER_NORTH.led)
+                "70003" -> setOf(GREEN_STREET_NORTH.led)
+                "70005" -> setOf(STONY_BROOK_NORTH.led)
+                "70007" -> setOf(JACKSON_SQUARE_NORTH.led)
+                "70009" -> setOf(ROXBURY_CROSSING_NORTH.led)
+                "70011" -> setOf(RUGGLES_NORTH.led)
+                "70013" -> setOf(MASS_AVE_NORTH.led)
+                "70015" -> setOf(BACK_BAY_NORTH.led)
+                "70017" -> setOf(TUFTS_NORTH.led)
+                "70019" -> setOf(CHINATOWN_NORTH.led)
+                "70021" -> setOf(OrangeStations.DOWNTOWN_CROSSING_NORTH.led)
+                "70023" -> setOf(STATE_NORTH.led)
+                "70025" -> setOf(HAYMARKET_NORTH.led)
+                "70027" -> setOf(NORTH_STATION_NORTH.led)
+                "70029" -> setOf(COMMUNITY_COLLEGE_NORTH.led)
+                "70031" -> setOf(SULLIVAN_SQUARE_NORTH.led)
+                "70279" -> setOf(ASSEMBLY_NORTH.led)
+                "70033" -> setOf(WELLINGTON_NORTH.led)
+                "70035" -> setOf(MALDEN_CENTER_NORTH.led)
 
                 else -> {
                     Log.i("BLE", "Unknown stopId $stopId")
-                    emptyList()
+                    emptySet()
                 }
             }
 
-            return when(stopStatus){
+            return  when(stopStatus){
                 STOPPED_AT -> base
-                IN_TRANSIT_TO, INCOMING_AT -> base.map { (it +directionOffset).toByte() }
+                IN_TRANSIT_TO, INCOMING_AT -> base.map { (it +directionOffset).toByte() }.toSet()
             }
         }
 
-        private fun redLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): List<Byte> {
+        private fun redLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): Set<Byte> {
             //Special Stations
             if(stopId == "70097" && (stopStatus == INCOMING_AT || stopStatus == IN_TRANSIT_TO))
-                return listOf(48)
+                return setOf(48)
             if(stopId == "70096" && (stopStatus == INCOMING_AT || stopStatus == IN_TRANSIT_TO))
-                return listOf(106)
+                return setOf(106)
 
             val directionOffset = when(directionId){
                 0 -> -1
@@ -172,79 +207,79 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
             }
 
 
-            val base: List<Byte> = when(stopId){
+            val base: Set<Byte> = when(stopId){
                 // SouthBound
-                "70061" ->  listOf(ALEWIFE_SOUTH.led, ALEWIFE_NORTH.led)
-                "Alewife-01" -> listOf(ALEWIFE_SOUTH.led, ALEWIFE_NORTH.led)
-                "Alewife-02" -> listOf(ALEWIFE_SOUTH.led, ALEWIFE_NORTH.led)
-                "Braintree-01" -> listOf(BRAINTREE_SOUTH.led, BRAINTREE_NORTH.led)
-                "Braintree-02" -> listOf(BRAINTREE_SOUTH.led, BRAINTREE_NORTH.led)
+                "70061" ->  setOf(ALEWIFE_SOUTH.led, ALEWIFE_NORTH.led)
+                "Alewife-01" -> setOf(ALEWIFE_SOUTH.led, ALEWIFE_NORTH.led)
+                "Alewife-02" -> setOf(ALEWIFE_SOUTH.led, ALEWIFE_NORTH.led)
+                "Braintree-01" -> setOf(BRAINTREE_SOUTH.led, BRAINTREE_NORTH.led)
+                "Braintree-02" -> setOf(BRAINTREE_SOUTH.led, BRAINTREE_NORTH.led)
 
                 //SouthBound
-                "70063" -> listOf(DAVIS_SOUTH.led)
-                "70065" -> listOf(PORTER_SOUTH.led)
-                "70067" -> listOf(HARVARD_SOUTH.led)
-                "70069" -> listOf(CENTRAL_SOUTH.led)
-                "70071" -> listOf(KENDALL_MIT_SOUTH.led)
-                "70073" -> listOf(CHARLES_MGH_SOUTH.led)
-                "70075" -> listOf(PARK_STREET_SOUTH.led)
-                "70077" -> listOf(RedStations.DOWNTOWN_CROSSING_SOUTH.led)
-                "70079" -> listOf(SOUTH_STATION_SOUTH.led)
-                "70081" -> listOf(BROADWAY_SOUTH.led)
-                "70083" -> listOf(ANDREW_SOUTH.led)
-                "70085" -> listOf(JFK_UMASS_SAVIN_SOUTH.led)
-                "70087" -> listOf(SAVIN_HILL_SOUTH.led)
-                "70089" -> listOf(FIELDS_CORNER_SOUTH.led)
-                "70091" -> listOf(SHAWMUT_SOUTH.led)
-                "70093" -> listOf(ASHMONT_SOUTH.led)
-                "70095" -> listOf(JFK_UMASS_NORTH_QUINCY_SOUTH.led)
-                "70097" -> listOf(NORTH_QUINCY_SOUTH.led)
-                "70099" -> listOf(WOLLASTON_SOUTH.led)
-                "70101" -> listOf(QUINCY_CENTER_SOUTH.led)
-                "70103" -> listOf(QUINCY_ADAMS_SOUTH.led)
-                "70105" -> listOf(BRAINTREE_SOUTH.led)
-                "70261" -> listOf(ASHMONT_SOUTH.led)
-                "70263" -> listOf(CEDAR_GROVE_SOUTH.led)
-                "70265" -> listOf(BUTLER_SOUTH.led)
-                "70267" -> listOf(MILTON_SOUTH.led)
-                "70269" -> listOf(CENTRAL_AVE_SOUTH.led)
-                "70271" -> listOf(VALLEY_ROAD_SOUTH.led)
-                "70273" -> listOf(CAPEN_STREET_SOUTH.led)
-                "70275" -> listOf(MATTAPAN_SOUTH.led)
+                "70063" -> setOf(DAVIS_SOUTH.led)
+                "70065" -> setOf(PORTER_SOUTH.led)
+                "70067" -> setOf(HARVARD_SOUTH.led)
+                "70069" -> setOf(CENTRAL_SOUTH.led)
+                "70071" -> setOf(KENDALL_MIT_SOUTH.led)
+                "70073" -> setOf(CHARLES_MGH_SOUTH.led)
+                "70075" -> setOf(PARK_STREET_SOUTH.led)
+                "70077" -> setOf(RedStations.DOWNTOWN_CROSSING_SOUTH.led)
+                "70079" -> setOf(SOUTH_STATION_SOUTH.led)
+                "70081" -> setOf(BROADWAY_SOUTH.led)
+                "70083" -> setOf(ANDREW_SOUTH.led)
+                "70085" -> setOf(JFK_UMASS_SAVIN_SOUTH.led)
+                "70087" -> setOf(SAVIN_HILL_SOUTH.led)
+                "70089" -> setOf(FIELDS_CORNER_SOUTH.led)
+                "70091" -> setOf(SHAWMUT_SOUTH.led)
+                "70093" -> setOf(ASHMONT_SOUTH.led)
+                "70095" -> setOf(JFK_UMASS_NORTH_QUINCY_SOUTH.led)
+                "70097" -> setOf(NORTH_QUINCY_SOUTH.led)
+                "70099" -> setOf(WOLLASTON_SOUTH.led)
+                "70101" -> setOf(QUINCY_CENTER_SOUTH.led)
+                "70103" -> setOf(QUINCY_ADAMS_SOUTH.led)
+                "70105" -> setOf(BRAINTREE_SOUTH.led)
+                "70261" -> setOf(ASHMONT_SOUTH.led)
+                "70263" -> setOf(CEDAR_GROVE_SOUTH.led)
+                "70265" -> setOf(BUTLER_SOUTH.led)
+                "70267" -> setOf(MILTON_SOUTH.led)
+                "70269" -> setOf(CENTRAL_AVE_SOUTH.led)
+                "70271" -> setOf(VALLEY_ROAD_SOUTH.led)
+                "70273" -> setOf(CAPEN_STREET_SOUTH.led)
+                "70275" -> setOf(MATTAPAN_SOUTH.led)
 
                 //NorthBound
-                "70064" -> listOf(DAVIS_NORTH.led)
-                "70066" -> listOf(PORTER_NORTH.led)
-                "70068" -> listOf(HARVARD_NORTH.led)
-                "70070" -> listOf(CENTRAL_NORTH.led)
-                "70072" -> listOf(KENDALL_MIT_NORTH.led)
-                "70074" -> listOf(CHARLES_MGH_NORTH.led)
-                "70076" -> listOf(PARK_STREET_NORTH.led)
-                "70078" -> listOf(RedStations.DOWNTOWN_CROSSING_NORTH.led)
-                "70080" -> listOf(SOUTH_STATION_NORTH.led)
-                "70082" -> listOf(BROADWAY_NORTH.led)
-                "70084" -> listOf(ANDREW_NORTH.led)
-                "70086" -> listOf(JFK_UMASS_SAVIN_NORTH.led)
-                "70088" -> listOf(SAVIN_HILL_NORTH.led)
-                "70090" -> listOf(FIELDS_CORNER_NORTH.led)
-                "70092" -> listOf(SHAWMUT_NORTH.led)
-                "70094" -> listOf(ASHMONT_NORTH.led)
-                "70096" -> listOf(JFK_UMASS_NORTH_QUINCY_NORTH.led)
-                "70098" -> listOf(NORTH_QUINCY_NORTH.led)
-                "70100" -> listOf(WOLLASTON_NORTH.led)
-                "70102" -> listOf(QUINCY_CENTER_NORTH.led)
-                "70104" -> listOf(QUINCY_ADAMS_NORTH.led)
-                "70264" -> listOf(CEDAR_GROVE_NORTH.led)
-                "70266" -> listOf(BUTLER_NORTH.led)
-                "70268" -> listOf(MILTON_NORTH.led)
-                "70270" -> listOf(CENTRAL_AVE_NORTH.led)
-                "70272" -> listOf(VALLEY_ROAD_NORTH.led)
-                "70274" -> listOf(CAPEN_STREET_NORTH.led)
-                "70276" -> listOf(MATTAPAN_NORTH.led)
+                "70064" -> setOf(DAVIS_NORTH.led)
+                "70066" -> setOf(PORTER_NORTH.led)
+                "70068" -> setOf(HARVARD_NORTH.led)
+                "70070" -> setOf(CENTRAL_NORTH.led)
+                "70072" -> setOf(KENDALL_MIT_NORTH.led)
+                "70074" -> setOf(CHARLES_MGH_NORTH.led)
+                "70076" -> setOf(PARK_STREET_NORTH.led)
+                "70078" -> setOf(RedStations.DOWNTOWN_CROSSING_NORTH.led)
+                "70080" -> setOf(SOUTH_STATION_NORTH.led)
+                "70082" -> setOf(BROADWAY_NORTH.led)
+                "70084" -> setOf(ANDREW_NORTH.led)
+                "70086" -> setOf(JFK_UMASS_SAVIN_NORTH.led)
+                "70088" -> setOf(SAVIN_HILL_NORTH.led)
+                "70090" -> setOf(FIELDS_CORNER_NORTH.led)
+                "70092" -> setOf(SHAWMUT_NORTH.led)
+                "70094" -> setOf(ASHMONT_NORTH.led)
+                "70096" -> setOf(JFK_UMASS_NORTH_QUINCY_NORTH.led)
+                "70098" -> setOf(NORTH_QUINCY_NORTH.led)
+                "70100" -> setOf(WOLLASTON_NORTH.led)
+                "70102" -> setOf(QUINCY_CENTER_NORTH.led)
+                "70104" -> setOf(QUINCY_ADAMS_NORTH.led)
+                "70264" -> setOf(CEDAR_GROVE_NORTH.led)
+                "70266" -> setOf(BUTLER_NORTH.led)
+                "70268" -> setOf(MILTON_NORTH.led)
+                "70270" -> setOf(CENTRAL_AVE_NORTH.led)
+                "70272" -> setOf(VALLEY_ROAD_NORTH.led)
+                "70274" -> setOf(CAPEN_STREET_NORTH.led)
+                "70276" -> setOf(MATTAPAN_NORTH.led)
 
                 else -> {
                     Log.i("BLE", "Unknown stopId $stopId")
-                    emptyList()
+                    emptySet()
                 }
             }
 
@@ -252,15 +287,9 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                 STOPPED_AT -> base
                 IN_TRANSIT_TO, INCOMING_AT -> {
                     when (stopId) {
-                        "70081" -> {
-                            return listOf((BROADWAY_SOUTH.led-1).toByte(), (BROADWAY_SOUTH.led-2).toByte())
-                        }
-                        "70078" -> {
-                            return listOf((SOUTH_STATION_NORTH.led+1).toByte(), (SOUTH_STATION_NORTH.led+2).toByte())
-                        }
-                        else -> {
-                            base.map {(it+directionOffset).toByte()}
-                        }
+                        "70081" -> return setOf((BROADWAY_SOUTH.led-1).toByte(), (BROADWAY_SOUTH.led-2).toByte())
+                        "70078" -> return setOf((SOUTH_STATION_NORTH.led+1).toByte(), (SOUTH_STATION_NORTH.led+2).toByte())
+                        else -> base.map {(it+directionOffset).toByte()}.toSet()
                     }
                 }
             }
