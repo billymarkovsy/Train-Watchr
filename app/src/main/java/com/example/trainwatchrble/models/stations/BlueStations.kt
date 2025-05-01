@@ -1,6 +1,6 @@
 package com.example.trainwatchrble.models.stations
 
-enum class BlueStations(val led: Byte) {
+enum class BlueStations(val led: Int) {
     WONDERLAND_WEST(0),
     REVERE_BEACH_WEST(2),
     BEACHMONT_WEST(4),

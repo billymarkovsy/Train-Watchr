@@ -3,7 +3,7 @@ package com.example.trainwatchrble.models
 import com.example.trainwatchrble.util.Constants
 import java.util.UUID
 
-class TrainWatchrCharacteristic(private val id: String, val data: Set<Byte>) {
+class TrainWatchrCharacteristic(private val id: String, val data: ByteArray) {
     val uuid: UUID = UUID.fromString(id)
 
     val name: String

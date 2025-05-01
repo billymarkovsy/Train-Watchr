@@ -13,7 +13,7 @@ import kotlin.math.ceil
 
 data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val routeId: String, val directionId: Int) {
 
-    fun getChipLEDId(): Set<Byte>{
+    fun getChipLEDId(): Set<Int>{
         return when(routeId){
             Constants.BLUE_LINE -> blueLineMapping(stopId, directionId, stopStatus)
             Constants.ORANGE_LINE -> orangeLineMapping(stopId, directionId, stopStatus)
@@ -24,9 +24,9 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
 
     companion object {
 
-        fun mapLinesToBytes(trains: List<Train>): Map<String, Set<Byte>>{
+        fun mapLinesToBytes(trains: List<Train>): Map<String,ByteArray>{
 
-            val stationIndexMap: Map<String, MutableSet<Byte>> = mapOf(
+            val stationIndexMap: Map<String, MutableSet<Int>> = mapOf(
                 Pair(Constants.BLUE_LINE, mutableSetOf()),
                 Pair(Constants.ORANGE_LINE, mutableSetOf()),
                 Pair(Constants.RED_LINE, mutableSetOf()),
@@ -34,8 +34,8 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
             )
 
             trains.forEach {
-                val bytes = it.getChipLEDId()
-                stationIndexMap[it.routeId]?.addAll(bytes)
+                val stationIndices = it.getChipLEDId()
+                stationIndexMap[it.routeId]?.addAll(stationIndices)
             }
 
             val stationByteArrayMap: MutableMap<String, ByteArray> = mutableMapOf()
@@ -49,17 +49,17 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                 }
                 stationByteArrayMap[it.key] = mapToByteArray(count, it.value)
             }
-            return stationIndexMap
+            return stationByteArrayMap
         }
 
-        private fun mapToByteArray(stationCount: Int, stationIndices: Set<Byte>): ByteArray{
+        private fun mapToByteArray(stationCount: Int, stationIndices: Set<Int>): ByteArray{
             val roundedByteCount: Int = Constants.toNearestPowerOf8(stationCount)
             val byteArrayLength: Int = ceil(roundedByteCount/8.0).toInt()
             Log.i("BLE", "ByteCount: $roundedByteCount | ArrayLength: $byteArrayLength")
             //var result = 0b0
             val result: Array<Int> = Array(byteArrayLength) { 0 }
-            for (i in 0..roundedByteCount){
-                if(stationIndices.contains(i.toByte())){
+            for (i in 0 until roundedByteCount){
+                if(stationIndices.contains(i)){
                     val index: Int = i/8
                     val bit = (0b1 shl i%8)
                     Log.i("BLE", "Index: $index bit: $bit")
@@ -71,7 +71,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
             return result.map { it.toByte() }.toByteArray()
         }
 
-        private fun blueLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): Set<Byte> {
+        private fun blueLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): Set<Int> {
             //West -> Bowdoin (0)
             //East -> Wonderland (1)
 
@@ -81,7 +81,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                 else -> throw IllegalArgumentException("Unknown directionId $directionId")
             }
 
-            val base: Set<Byte> = when(stopId) {
+            val base: Set<Int> = when(stopId) {
 
                 "70838" -> setOf(BOWDOIN_WEST.led)
                 "70039" -> setOf(GOVT_CENTER_WEST.led)
@@ -118,14 +118,14 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
             return when(stopStatus){
                 STOPPED_AT -> base
                 IN_TRANSIT_TO, INCOMING_AT -> when(stopId){
-                    "70045" -> return setOf((MAVERICK_WEST.led+1).toByte(), (MAVERICK_WEST.led+2).toByte())
-                    "70044" -> return setOf((AQUARIUM_EAST.led-1).toByte(), (AQUARIUM_EAST.led-2).toByte())
-                    else -> base.map { (it +directionOffset).toByte() }.toSet()
+                    "70045" -> return setOf(MAVERICK_WEST.led+1, MAVERICK_WEST.led+2)
+                    "70044" -> return setOf(AQUARIUM_EAST.led-1, AQUARIUM_EAST.led-2)
+                    else -> base.map { it +directionOffset }.toSet()
                 }
             }
         }
 
-        private fun orangeLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): Set<Byte> {
+        private fun orangeLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): Set<Int> {
 
             val directionOffset = when(directionId){
                 0 -> -1
@@ -133,7 +133,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                 else -> throw IllegalArgumentException("Unknown direction id $directionId")
             }
 
-            val base: Set<Byte> = when(stopId) {
+            val base: Set<Int> = when(stopId) {
                 "70001" -> setOf(FOREST_HILLS_SOUTH.led, FOREST_HILLS_NORTH.led)
                 "70036" -> setOf(OAKGROVE_SOUTH.led, OAKGROVE_NORTH.led)
                 "Forest Hills-01" -> setOf(FOREST_HILLS_NORTH.led, FOREST_HILLS_SOUTH.led)
@@ -189,11 +189,11 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
 
             return  when(stopStatus){
                 STOPPED_AT -> base
-                IN_TRANSIT_TO, INCOMING_AT -> base.map { (it +directionOffset).toByte() }.toSet()
+                IN_TRANSIT_TO, INCOMING_AT -> base.map { it +directionOffset }.toSet()
             }
         }
 
-        private fun redLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): Set<Byte> {
+        private fun redLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): Set<Int> {
             //Special Stations
             if(stopId == "70097" && (stopStatus == INCOMING_AT || stopStatus == IN_TRANSIT_TO))
                 return setOf(48)
@@ -207,7 +207,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
             }
 
 
-            val base: Set<Byte> = when(stopId){
+            val base: Set<Int> = when(stopId){
                 // SouthBound
                 "70061" ->  setOf(ALEWIFE_SOUTH.led, ALEWIFE_NORTH.led)
                 "Alewife-01" -> setOf(ALEWIFE_SOUTH.led, ALEWIFE_NORTH.led)
@@ -287,9 +287,9 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                 STOPPED_AT -> base
                 IN_TRANSIT_TO, INCOMING_AT -> {
                     when (stopId) {
-                        "70081" -> return setOf((BROADWAY_SOUTH.led-1).toByte(), (BROADWAY_SOUTH.led-2).toByte())
-                        "70078" -> return setOf((SOUTH_STATION_NORTH.led+1).toByte(), (SOUTH_STATION_NORTH.led+2).toByte())
-                        else -> base.map {(it+directionOffset).toByte()}.toSet()
+                        "70081" -> return setOf(BROADWAY_SOUTH.led-1, BROADWAY_SOUTH.led-2)
+                        "70078" -> return setOf(SOUTH_STATION_NORTH.led+1, SOUTH_STATION_NORTH.led+2)
+                        else -> base.map {it+directionOffset}.toSet()
                     }
                 }
             }
