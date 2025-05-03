@@ -56,7 +56,7 @@
         android:layout_marginStart="80dp"
         app:layout_constraintStart_toEndOf="@+id/serverConnectButton"
         app:layout_constraintTop_toTopOf="@+id/serverConnectButton"
-        app:srcCompat="@android:drawable/presence_online" />
+        app:srcCompat="@mipmap/red_x" />
 
     <ImageView
         android:id="@+id/serverDataStatus"

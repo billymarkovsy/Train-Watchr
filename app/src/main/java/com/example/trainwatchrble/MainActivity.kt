@@ -25,6 +25,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -51,6 +52,9 @@ class MainActivity : AppCompatActivity() {
 
     private val STATE_CONNECTED = 0
     private val STATE_DISCONNECTED = 2
+
+    //@android:drawable/ic_delete
+    //@android:drawable/presence_online
 
     private lateinit var bluetoothDevice: BluetoothDevice
     private lateinit var bluetoothLeScanner: BluetoothLeScanner
@@ -88,7 +92,7 @@ class MainActivity : AppCompatActivity() {
         sendDataToServerLoader.visibility = View.GONE
         connectToServerLoader.visibility = View.GONE
         sendDataToServerStatus.visibility = View.GONE
-        connectToServerStatus.visibility = View.GONE
+        connectToServerStatus.visibility = View.VISIBLE
 
         connectToServerButton.setOnClickListener { _ ->
             connectToServerLoader.visibility = View.VISIBLE
@@ -146,8 +150,12 @@ class MainActivity : AppCompatActivity() {
                 Log.i("BLE", "Found TrainWatchr Server!")
                 scanning = false
                 discovered = true
+                connectToServerStatus.setImageDrawable(AppCompatResources.getDrawable(applicationContext,R.mipmap.green_check))
                 if (!this@MainActivity::bluetoothDevice.isInitialized)
                     bluetoothDevice = result.device
+            }
+            else {
+                connectToServerStatus.setImageDrawable(AppCompatResources.getDrawable(applicationContext,R.mipmap.red_x))
             }
         }
     }
@@ -205,7 +213,7 @@ class MainActivity : AppCompatActivity() {
                 queue.addAll(listOf(
                     TrainWatchrCharacteristic(Constants.RED_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.RED_LINE, byteArrayOf())),
                     TrainWatchrCharacteristic(Constants.BLUE_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.BLUE_LINE, byteArrayOf())),
-//                    TrainWatchrCharacteristic("Green", Constants.GREEN_LINE_CHARACTERISTIC),
+                    TrainWatchrCharacteristic(Constants.GREEN_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.GREEN_LINE, byteArrayOf())),
                     TrainWatchrCharacteristic(Constants.ORANGE_LINE_CHARACTERISTIC, ledMap.getOrDefault(Constants.ORANGE_LINE, byteArrayOf()))
                 ))
 

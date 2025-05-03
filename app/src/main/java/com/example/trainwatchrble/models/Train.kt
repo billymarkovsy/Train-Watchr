@@ -6,6 +6,7 @@ import com.example.trainwatchrble.models.stations.RedStations
 import com.example.trainwatchrble.models.stations.RedStations.*
 import com.example.trainwatchrble.models.stations.OrangeStations
 import com.example.trainwatchrble.models.stations.OrangeStations.*
+import com.example.trainwatchrble.models.stations.MainGreenStations.*
 import com.example.trainwatchrble.util.Constants
 import com.google.transit.realtime.GtfsRealtime.VehiclePosition.VehicleStopStatus
 import com.google.transit.realtime.GtfsRealtime.VehiclePosition.VehicleStopStatus.*
@@ -13,12 +14,19 @@ import kotlin.math.ceil
 
 data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val routeId: String, val directionId: Int) {
 
+    val truncatedRouteId: String
+        get() = routeId.split("-")[0]
+
     fun getChipLEDId(): Set<Int>{
-        return when(routeId){
+        return when(truncatedRouteId){
             Constants.BLUE_LINE -> blueLineMapping(stopId, directionId, stopStatus)
             Constants.ORANGE_LINE -> orangeLineMapping(stopId, directionId, stopStatus)
             Constants.RED_LINE, Constants.MATTAPAN_LINE -> redLineMapping(stopId, directionId, stopStatus)
-            else -> return emptySet()
+            Constants.GREEN_LINE -> greenLineMapping(stopId, directionId, stopStatus)
+            else -> {
+                Log.i("BLE", "Unknown route $routeId found")
+                return emptySet()
+            }
         }
     }
 
@@ -35,14 +43,14 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
 
             trains.forEach {
                 val stationIndices = it.getChipLEDId()
-                stationIndexMap[it.routeId]?.addAll(stationIndices)
+                stationIndexMap[it.truncatedRouteId]?.addAll(stationIndices)
             }
 
             val stationByteArrayMap: MutableMap<String, ByteArray> = mutableMapOf()
             stationIndexMap.forEach {
                 val count = when(it.key){
                     Constants.ORANGE_LINE -> Constants.ORANGE_LINE_STATION_COUNT
-                    Constants.GREEN_LINE -> 1
+                    Constants.GREEN_LINE -> Constants.GREEN_LINE_STATION_COUNT
                     Constants.BLUE_LINE -> Constants.BLUE_LINE_STATION_COUNT
                     Constants.RED_LINE -> Constants.RED_LINE_STATION_COUNT
                     else -> throw IllegalArgumentException("Unknown Line specified")
@@ -62,13 +70,147 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                 if(stationIndices.contains(i)){
                     val index: Int = i/8
                     val bit = (0b1 shl i%8)
-                    Log.i("BLE", "Index: $index bit: $bit")
+                    Log.d("BLE", "Index: $index bit: $bit")
                     result[index] = result[index] or bit
-                    Log.i("BLE", "Result: ${result[index]}")
+                    Log.d("BLE", "Result: ${result[index]}")
                 }
             }
             Log.i("BLE", "Bit array: ${result.toList()}")
             return result.map { it.toByte() }.toByteArray()
+        }
+
+        //Green line doesn't have many in-between stations, so we can just map indices directly
+        private fun greenLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): Set<Int> {
+
+            //West/South -> 0
+            //East/North -> 1
+            val stationSet: Set<Int> = when(stopId) {
+                "70511" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(MEDFORD_TUFTS_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(BALL_SQUARE_TO_MEDFORD_TUFTS.led)
+                }
+                "70509" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(BALL_SQUARE_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(MAGOUN_SQUARE_TO_BALL_SQUARE.led)
+                }
+                "70507" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(MAGOUN_SQUARE_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(GILMAN_SQUARE_TO_MAGOUN_SQUARE.led)
+                }
+                "70505" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(GILMAN_SQUARE_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(EAST_SOMERVILLE_TO_GILMAN_SQUARE.led)
+                }
+                "70513" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(EAST_SOMERVILLE_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(LECHMERE_TO_EAST_SOMERVILLE.led)
+                }
+                "70503" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(UNION_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(LECHMERE_TO_UNION.led)
+                }
+                "70501" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(LECHMERE_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(SCIENCEPARK_TO_LECHMERE.led)
+                }
+                "70207" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(SCIENCEPARK_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(NSTATIONGREEN_TO_SCIENCEPARK.led)
+                }
+                "70205" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(NSTATIONGREEN_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(HAYMARKETGREEN_TO_NSTATIONGREEN.led)
+                }
+                "70203" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(HAYMARKETGREEN_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(GOVCENTGREEN_TO_HAYMARKETGREEN.led)
+                }
+                "70201" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(GOVCENTGREEN_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(PARKSTGREEN_TO_GOVCENTGREEN.led)
+                }
+                "70200" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(PARKSTGREEN_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(BOYLSTON_TO_PARKSTGREEN.led)
+                }
+                "70158" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(BOYLSTON_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(ARLINGTON_TO_BOYLSTON.led)
+                }
+                "70156" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(ARLINGTON_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(COPLEY_TO_ARLINGTON.led)
+                }
+                "70154" -> setOf(COPLEY_NORTH.led)
+                "70152" -> setOf(HYNES_NORTH.led)
+                "70150" -> setOf(KENMORE_NORTH.led)
+
+                "70512" -> setOf(MEDFORD_TUFTS_SOUTH.led)
+                "70510" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(BALL_SQUARE_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(MEDFORD_TUFTS_TO_BALL_SQUARE.led)
+                }
+                "70508" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(MAGOUN_SQUARE_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(BALL_SQUARE_TO_MAGOUN_SQUARE.led)
+                }
+                "70506" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(GILMAN_SQUARE_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(MAGOUN_SQUARE_TO_GILMAN_SQUARE.led)
+                }
+                "70514" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(EAST_SOMERVILLE_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(GILMAN_SQUARE_TO_EAST_SOMERVILLE.led)
+                }
+                "70504" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(UNION_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(UNION_TO_LECHMERE.led)
+                }
+                "70502" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(LECHMERE_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(EAST_SOMERVILLE_TO_LECHMERE.led)
+                }
+                "70208" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(SCIENCEPARK_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(LECHMERE_TO_SCIENCEPARK.led)
+                }
+                "70206" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(NSTATIONGREEN_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(SCIENCEPARK_TO_NSTATIONGREEN.led)
+                }
+                "70204" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(HAYMARKETGREEN_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(NSTATIONGREEN_TO_HAYMARKETGREEN.led)
+                }
+                "70202" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(GOVCENTGREEN_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(HAYMARKETGREEN_TO_GOVCENTGREEN.led)
+                }
+                "70196", "70197", "70198", "70199" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(PARKSTGREEN_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(GOVCENTGREEN_TO_PARKST.led) //TODO: review the incoming-at values for park st
+                }
+                "70159" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(BOYLSTON_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(PARKSTGREEN_TO_BOYLSTON.led)
+                }
+                "70157" -> when(stopStatus) {
+                    STOPPED_AT -> setOf(ARLINGTON_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(BOYLSTON_TO_ARLINGTON.led)
+                }
+                "70155" -> when(stopStatus){
+                    STOPPED_AT -> setOf(COPLEY_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(ARLINGTON_TO_COPLEY.led)
+                }
+                "70153" -> setOf(HYNES_SOUTH.led)
+                "70151" -> setOf(KENMORE_SOUTH.led)
+                else -> {
+                    Log.i("BLE", "Unknown stopId $stopId")
+                    emptySet()
+                }
+            }
+
+            return stationSet
         }
 
         private fun blueLineMapping(stopId: String, directionId: Int, stopStatus: VehicleStopStatus): Set<Int> {
