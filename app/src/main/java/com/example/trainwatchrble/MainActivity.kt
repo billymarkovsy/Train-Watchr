@@ -122,6 +122,11 @@ class MainActivity : AppCompatActivity() {
                 connectToServerLoader.visibility = View.GONE
                 connectToServerStatus.visibility = View.VISIBLE
 
+                if(!discovered){
+                    Log.i("BLE", "Unable to find TrainWatchr Server")
+
+                }
+
             }, Constants.BLE_SCAN_PERIOD)
             scanning = true
             bluetoothLeScanner.startScan(leScanCallback)

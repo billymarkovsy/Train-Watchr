@@ -61,15 +61,15 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
         }
 
         private fun mapToByteArray(stationCount: Int, stationIndices: Set<Int>): ByteArray{
-            val roundedByteCount: Int = Constants.toNearestPowerOf8(stationCount)
-            val byteArrayLength: Int = ceil(roundedByteCount/8.0).toInt()
+            val roundedByteCount: Int = Constants.toNearestMultipleOf8(stationCount)
+            val byteArrayLength: Int = roundedByteCount/8
             Log.i("BLE", "ByteCount: $roundedByteCount | ArrayLength: $byteArrayLength")
             //var result = 0b0
             val result: Array<Int> = Array(byteArrayLength) { 0 }
             for (i in 0 until roundedByteCount){
                 if(stationIndices.contains(i)){
                     val index: Int = i/8
-                    val bit = (0b1 shl i%8)
+                    val bit = (0b1 shl i%8) // 1 << 3 = 1000
                     Log.d("BLE", "Index: $index bit: $bit")
                     result[index] = result[index] or bit
                     Log.d("BLE", "Result: ${result[index]}")

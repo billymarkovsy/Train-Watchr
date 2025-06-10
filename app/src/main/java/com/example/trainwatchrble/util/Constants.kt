@@ -1,7 +1,7 @@
 package com.example.trainwatchrble.util
 
 import java.net.URL
-import kotlin.math.floor
+import kotlin.math.ceil
 
 object Constants {
     val SERVER_ID = "000000ff-0000-1000-8000-00805f9b34fb"
@@ -32,7 +32,7 @@ object Constants {
     val GREEN_E_LINE = "Green-E"
     val MATTAPAN_LINE = "Mattapan"
 
-    fun toNearestPowerOf8(input: Int): Int{
-        return (8*(floor((input-0.1)/8) + 1)).toInt()
+    fun toNearestMultipleOf8(input: Int): Int{
+        return (8*(ceil((input-0.1)/8))).toInt()
     }
 }
