@@ -1,6 +1,14 @@
 package com.example.trainwatchrble
 
 import com.example.trainwatchrble.models.Train
+import com.example.trainwatchrble.util.Constants.BLUE_LINE
+import com.example.trainwatchrble.util.Constants.GREEN_B_LINE
+import com.example.trainwatchrble.util.Constants.GREEN_C_LINE
+import com.example.trainwatchrble.util.Constants.GREEN_D_LINE
+import com.example.trainwatchrble.util.Constants.GREEN_E_LINE
+import com.example.trainwatchrble.util.Constants.MATTAPAN_LINE
+import com.example.trainwatchrble.util.Constants.ORANGE_LINE
+import com.example.trainwatchrble.util.Constants.RED_LINE
 import com.google.transit.realtime.GtfsRealtime.FeedEntity
 import com.google.transit.realtime.GtfsRealtime.FeedMessage
 import java.net.HttpURLConnection
@@ -8,7 +16,7 @@ import java.net.URL
 
 object TrainAPIClient {
 
-    val validTrainRoutes: Set<String> = setOf("Blue", "Green-B", "Green-C", "Green-D", "Green-E", "Red", "Orange", "Mattapan")
+    val validTrainRoutes: Set<String> = setOf(BLUE_LINE, GREEN_B_LINE, GREEN_C_LINE, GREEN_D_LINE, GREEN_E_LINE, RED_LINE, ORANGE_LINE, MATTAPAN_LINE)
 
     fun fetchVehicleData(url: URL, apiKey: String): List<Train>{
         with(url.openConnection() as HttpURLConnection){

@@ -13,7 +13,7 @@ object Constants {
     const val ORANGE_LINE_STATION_COUNT = 78
     const val BLUE_LINE_STATION_COUNT = 48
     const val RED_LINE_STATION_COUNT = 116
-    const val GREEN_LINE_STATION_COUNT = 62 //TODO: Review non-main green line stations
+    const val GREEN_LINE_STATION_COUNT = 204
 
     val BLE_SCAN_PERIOD = 3000L
 

@@ -6,11 +6,10 @@ import com.example.trainwatchrble.models.stations.RedStations
 import com.example.trainwatchrble.models.stations.RedStations.*
 import com.example.trainwatchrble.models.stations.OrangeStations
 import com.example.trainwatchrble.models.stations.OrangeStations.*
-import com.example.trainwatchrble.models.stations.MainGreenStations.*
+import com.example.trainwatchrble.models.stations.GreenStations.*
 import com.example.trainwatchrble.util.Constants
 import com.google.transit.realtime.GtfsRealtime.VehiclePosition.VehicleStopStatus
 import com.google.transit.realtime.GtfsRealtime.VehiclePosition.VehicleStopStatus.*
-import kotlin.math.ceil
 
 data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val routeId: String, val directionId: Int) {
 
@@ -85,6 +84,8 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
             //West/South -> 0
             //East/North -> 1
             val stationSet: Set<Int> = when(stopId) {
+
+                //region main line
                 "70511" -> when(stopStatus) {
                     STOPPED_AT -> setOf(MEDFORD_TUFTS_NORTH.led)
                     IN_TRANSIT_TO, INCOMING_AT -> setOf(BALL_SQUARE_TO_MEDFORD_TUFTS.led)
@@ -203,7 +204,254 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                     IN_TRANSIT_TO, INCOMING_AT -> setOf(ARLINGTON_TO_COPLEY.led)
                 }
                 "70153" -> setOf(HYNES_SOUTH.led)
-                "70151" -> setOf(KENMORE_SOUTH.led)
+                "70151" -> when(stopStatus){
+                    STOPPED_AT -> setOf(KENMORE_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(FENWAY_TO_KENMORE.led)
+                }
+
+                //endregion
+
+                //region B line
+
+                "70149" -> setOf(BLANDFORD_OUT.led)
+                "70147" -> setOf(BU_EAST_OUT.led)
+                "70145" -> setOf(BU_CENTRAL_OUT.led)
+                "170141" -> setOf(AMORY_ST_OUT.led)
+                "170137" -> setOf(BABCOCK_ST_OUT.led)
+                "70135" -> setOf(PACKARDS_CORNER_OUT.led)
+                "70131" -> setOf(HARVARD_AVE_OUT.led)
+                "70129" -> setOf(GRIGGS_ST_OUT.led)
+                "70127" -> setOf(ALLSTON_ST_OUT.led)
+                "70125" -> setOf(WARREN_ST_OUT.led)
+                "70121" -> setOf(WASHINGTON_ST_OUT.led)
+                "70117" -> setOf(SUTHERLAND_RD_OUT.led)
+                "70115" -> setOf(CHISWICK_RD_OUT.led)
+                "70113" -> setOf(CHESTNUT_HILL_AVE_OUT.led)
+                "70111" -> setOf(SOUTH_ST_OUT.led)
+                "70107" -> when(stopStatus){
+                    INCOMING_AT, IN_TRANSIT_TO -> setOf(SOUTH_ST_TO_BOSTON_COLLEGE.led)
+                    STOPPED_AT -> setOf(BOSTON_COLLEGE_OUT.led)
+                }
+
+                "70148" -> setOf(BLANDFORD_IN.led)
+                "70146" -> setOf(BU_EAST_IN.led)
+                "70144" -> setOf(BU_CENTRAL_IN.led)
+                "170140" -> setOf(AMORY_ST_IN.led)
+                "170136" -> setOf(BABCOCK_ST_IN.led)
+                "70134" -> setOf(PACKARDS_CORNER_IN.led)
+                "70130" -> setOf(HARVARD_AVE_IN.led)
+                "70128" -> setOf(GRIGGS_ST_IN.led)
+                "70126" -> setOf(ALLSTON_ST_IN.led)
+                "70124" -> setOf(WARREN_ST_IN.led)
+                "70120" -> setOf(WASHINGTON_ST_IN.led)
+                "70116" -> setOf(SUTHERLAND_RD_IN.led)
+                "70114" -> setOf(CHISWICK_RD_IN.led)
+                "70112" -> setOf(CHESTNUT_HILL_AVE_IN.led)
+                "70110" -> when(stopStatus){
+                    INCOMING_AT, IN_TRANSIT_TO -> setOf(BOSTON_COLLEGE_TO_SOUTH_ST.led)
+                    STOPPED_AT -> setOf(SOUTH_ST_IN.led)
+                }
+                "70106" -> setOf(BOSTON_COLLEGE_IN.led)
+
+
+                //endregion
+
+                //region C Line
+                "70211" -> setOf(ST_MARYS_ST_SOUTH.led)
+                "70213" -> setOf(HAWES_ST_SOUTH.led)
+                "70215" -> setOf(KENT_ST_SOUTH.led)
+                "70217" -> setOf(ST_PAUL_ST_SOUTH.led)
+                "70219" -> setOf(COOLIDGE_CORNER_SOUTH.led)
+                "70223" -> setOf(SUMMIT_AVE_SOUTH.led)
+                "70225" -> setOf(BRANDON_HALL_SOUTH.led)
+                "70227" -> setOf(FAIRBANKS_ST_SOUTH.led)
+                "70229" -> setOf(WASHINGTON_SQ_SOUTH.led)
+                "70231" -> setOf(TAPPAN_ST_SOUTH.led)
+                "70233" -> setOf(DEAN_RD_SOUTH.led)
+                "70235" -> setOf(ENGLEWOOD_AVE_SOUTH.led)
+                "70237" -> setOf(CLEVELAND_CIRCLE_SOUTH.led)
+
+                "70212" -> setOf(ST_MARYS_ST_NORTH.led)
+                "70214" -> setOf(HAWES_ST_NORTH.led)
+                "70216" -> setOf(KENT_ST_NORTH.led)
+                "70218" -> setOf(ST_PAUL_ST_NORTH.led)
+                "70220" -> setOf(COOLIDGE_CORNER_NORTH.led)
+                "70224" -> setOf(SUMMIT_AVE_NORTH.led)
+                "70226" -> setOf(BRANDON_HALL_NORTH.led)
+                "70228" -> setOf(FAIRBANKS_ST_NORTH.led)
+                "70230" -> setOf(WASHINGTON_SQ_NORTH.led)
+                "70232" -> setOf(TAPPAN_ST_NORTH.led)
+                "70234" -> setOf(DEAN_RD_NORTH.led)
+                "70236" -> setOf(ENGLEWOOD_AVE_NORTH.led)
+                "70238" -> setOf(CLEVELAND_CIRCLE_NORTH.led)
+
+                //endregion
+
+                //region D Line
+
+                "70161" -> when(stopStatus){
+                    STOPPED_AT -> setOf(RIVERSIDE_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(WOODLAND_TO_RIVERSIDE.led)
+                }
+                "70163" -> when(stopStatus){
+                    STOPPED_AT -> setOf(WOODLAND_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(WABAN_TO_WOODLAND.led)
+                }
+                "70165" -> when(stopStatus){
+                    STOPPED_AT -> setOf(WABAN_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(ELIOT_TO_WABAN.led)
+                }
+                "70167" -> when(stopStatus){
+                    STOPPED_AT -> setOf(ELIOT_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(NEWTON_HIGHLANDS_TO_ELIOT.led)
+                }
+                "70169" -> when(stopStatus){
+                    STOPPED_AT -> setOf(NEWTON_HIGHLANDS_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(NEWTON_CENTRE_TO_NEWTON_HIGHLANDS.led)
+                }
+                "70171" -> when(stopStatus){
+                    STOPPED_AT -> setOf(NEWTON_CENTRE_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(CHESTNUT_HILL_TO_NEWTON_CENTRE.led)
+                }
+                "70173" -> when(stopStatus){
+                    STOPPED_AT -> setOf(CHESTNUT_HILL_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(RESERVOIR_TO_CHESTNUT_HILL.led)
+                }
+                "70175" -> when(stopStatus){
+                    STOPPED_AT -> setOf(RESERVOIR_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(BEACONSFIELD_TO_RESERVOIR.led)
+                }
+                "70177" -> when(stopStatus){
+                    STOPPED_AT -> setOf(BEACONSFIELD_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(BROOKLINE_HILLS_TO_BEACONSFIELD.led)
+                }
+                "70179" -> when(stopStatus){
+                    STOPPED_AT -> setOf(BROOKLINE_HILLS_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(BROOKLINE_VILLAGE_TO_BROOKLINE_HILLS.led)
+                }
+                "70181" -> when(stopStatus){
+                    STOPPED_AT -> setOf(BROOKLINE_VILLAGE_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(LONGWOOD_TO_BROOKLINE_VILLAGE.led)
+                }
+                "70183" -> when(stopStatus){
+                    STOPPED_AT -> setOf(LONGWOOD_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(FENWAY_TO_LONGWOOD.led)
+                }
+                "70187" -> when(stopStatus){
+                    STOPPED_AT -> setOf(FENWAY_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(KENMORE_TO_FENWAY.led)
+                }
+
+                "70160" ->  setOf(RIVERSIDE_NORTH.led)
+                "70162" -> when(stopStatus){
+                    STOPPED_AT -> setOf(WOODLAND_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(RIVERSIDE_TO_WOODLAND.led)
+                }
+                "70164" -> when(stopStatus){
+                    STOPPED_AT -> setOf(WABAN_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(WOODLAND_TO_WABAN.led)
+                }
+                "70166" -> when(stopStatus){
+                    STOPPED_AT -> setOf(ELIOT_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(WABAN_TO_ELIOT.led)
+                }
+                "70168" -> when(stopStatus){
+                    STOPPED_AT -> setOf(NEWTON_HIGHLANDS_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(ELIOT_TO_NEWTON_HIGHLANDS.led)
+                }
+                "70170" -> when(stopStatus){
+                    STOPPED_AT -> setOf(NEWTON_CENTRE_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(NEWTON_HIGHLANDS_TO_NEWTON_CENTRE.led)
+                }
+                "70172" -> when(stopStatus){
+                    STOPPED_AT -> setOf(CHESTNUT_HILL_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(NEWTON_CENTRE_TO_CHESTNUT_HILL.led)
+                }
+                "70174" -> when(stopStatus){
+                    STOPPED_AT -> setOf(RESERVOIR_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(CHESTNUT_HILL_TO_RESERVOIR.led)
+                }
+                "70176" -> when(stopStatus){
+                    STOPPED_AT -> setOf(BEACONSFIELD_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(RESERVOIR_TO_BEACONSFIELD.led)
+                }
+                "70178" -> when(stopStatus){
+                    STOPPED_AT -> setOf(BROOKLINE_HILLS_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(BEACONSFIELD_TO_BROOKLINE_HILLS.led)
+                }
+                "70180" -> when(stopStatus){
+                    STOPPED_AT -> setOf(BROOKLINE_VILLAGE_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(BROOKLINE_HILLS_TO_BROOKLINE_VILLAGE.led)
+                }
+                "70182" -> when(stopStatus){
+                    STOPPED_AT -> setOf(LONGWOOD_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(BROOKLINE_VILLAGE_TO_LONGWOOD.led)
+                }
+                "70186" -> when(stopStatus){
+                    STOPPED_AT -> setOf(FENWAY_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(LONGWOOD_TO_FENWAY.led)
+                }
+
+
+                //endregion
+
+                // region E line
+                "70239" -> when(stopStatus){
+                    STOPPED_AT -> setOf(PRUDENTIAL_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf()
+                }
+
+                "70241" -> when(stopStatus){
+                    STOPPED_AT -> setOf(SYMPHONY_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(PRUDENTIAL_TO_SYMPHONY.led)
+                }
+
+                "70243" -> when(stopStatus){
+                    STOPPED_AT -> setOf(NORTHEASTERN_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(SYMPHONY_TO_NORTHEASTERN.led)
+                }
+
+                "70245" -> when(stopStatus){
+                    STOPPED_AT -> setOf(MFA_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(NORTHEASTERN_TO_MFA.led)
+                }
+
+                "70247" -> when(stopStatus){
+                    STOPPED_AT -> setOf(LONGWOOD_MEDICAL_AREA_SOUTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(MFA_TO_LONGWOOD_MEDICAL_AREA.led)
+                }
+
+                "70249" -> setOf(BRIGHAM_CIRCLE_SOUTH.led)
+                "70251" -> setOf(FENWOOD_RD_SOUTH.led)
+                "70253" -> setOf(MISSION_PARK_SOUTH.led)
+                "70255" -> setOf(RIVERWAY_SOUTH.led)
+                "70257" -> setOf(BACK_OF_THE_HILL_SOUTH.led)
+                "70260" -> setOf(HEATH_ST_SOUTH.led, HEATH_ST_NORTH.led)
+
+                "70258" -> setOf(BACK_OF_THE_HILL_NORTH.led)
+                "70256" -> setOf(RIVERWAY_NORTH.led)
+                "70254" -> setOf(MISSION_PARK_NORTH.led)
+                "70252" -> setOf(FENWOOD_RD_NORTH.led)
+                "70250" -> setOf(BRIGHAM_CIRCLE_NORTH.led)
+                "70248" -> setOf(LONGWOOD_MEDICAL_AREA_NORTH.led)
+
+                "70246" -> when(stopStatus){
+                    STOPPED_AT -> setOf(MFA_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(LONGWOOD_MEDICAL_AREA_TO_MFA.led)
+                }
+                "70244" -> when(stopStatus){
+                    STOPPED_AT -> setOf(NORTHEASTERN_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(MFA_TO_NORTHEASTERN.led)
+                }
+                "70242" -> when(stopStatus){
+                    STOPPED_AT -> setOf(SYMPHONY_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(NORTHEASTERN_TO_SYMPHONY.led)
+                }
+                "70240" -> when(stopStatus){
+                    STOPPED_AT -> setOf(PRUDENTIAL_NORTH.led)
+                    IN_TRANSIT_TO, INCOMING_AT -> setOf(SYMPHONY_TO_PRUDENTIAL.led)
+                }
+                //endregion
                 else -> {
                     Log.i("BLE", "Unknown stopId $stopId")
                     emptySet()
