@@ -18,7 +18,7 @@ object Constants {
     val BLE_SCAN_PERIOD = 3000L
 
     val MBTA_URL = URL("https://cdn.mbta.com/realtime/VehiclePositions.pb")
-    val TRAIN_DATA_REFRESH = 7000L
+    val TRAIN_DATA_REFRESH = 2000L
 
     val TRAIN_WATCHR_DEVICE_NAME = "TrainWatchr Server"
 

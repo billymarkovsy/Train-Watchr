@@ -110,6 +110,9 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                     STOPPED_AT -> setOf(UNION_NORTH.led)
                     IN_TRANSIT_TO, INCOMING_AT -> setOf(LECHMERE_TO_UNION.led)
                 }
+
+                "Union Square-01", "Union Square-02" -> setOf(UNION_NORTH.led, UNION_NORTH.led)
+
                 "70501" -> when(stopStatus) {
                     STOPPED_AT -> setOf(LECHMERE_NORTH.led)
                     IN_TRANSIT_TO, INCOMING_AT -> setOf(SCIENCEPARK_TO_LECHMERE.led)
@@ -466,14 +469,14 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
             //East -> Wonderland (1)
 
             val directionOffset = when(directionId){
-                0 -> 1
-                1 -> -1
+                0 -> -1
+                1 -> 1
                 else -> throw IllegalArgumentException("Unknown directionId $directionId")
             }
 
             val base: Set<Int> = when(stopId) {
 
-                "70838" -> setOf(BOWDOIN_WEST.led)
+                "70838" -> setOf(BOWDOIN_WEST.led, BOWDOIN_EAST.led)
                 "70039" -> setOf(GOVT_CENTER_WEST.led)
                 "70041" -> setOf(STATE_WEST.led)
                 "70043" -> setOf(AQUARIUM_WEST.led)
@@ -486,7 +489,6 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                 "70057" -> setOf(REVERE_BEACH_WEST.led)
                 "70059" -> setOf(WONDERLAND_WEST.led)
 
-                "70038" -> setOf(BOWDOIN_EAST.led)
                 "70040" -> setOf(GOVT_CENTER_EAST.led)
                 "70042" -> setOf(STATE_EAST.led)
                 "70044" -> setOf(AQUARIUM_EAST.led)
@@ -507,11 +509,13 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
 
             return when(stopStatus){
                 STOPPED_AT -> base
-                IN_TRANSIT_TO, INCOMING_AT -> when(stopId){
-                    "70045" -> return setOf(MAVERICK_WEST.led+1, MAVERICK_WEST.led+2)
-                    "70044" -> return setOf(AQUARIUM_EAST.led-1, AQUARIUM_EAST.led-2)
-                    else -> base.map { it +directionOffset }.toSet()
-                }
+                IN_TRANSIT_TO, INCOMING_AT -> base.map { it + directionOffset }.toSet()
+//                IN_TRANSIT_TO, INCOMING_AT -> when(stopId){
+//                    //TODO: only set one of them off
+//                    "70045" -> return setOf(MAVERICK_WEST.led+1, MAVERICK_WEST.led+2)
+//                    "70044" -> return setOf(AQUARIUM_EAST.led-1, AQUARIUM_EAST.led-2)
+//                    else -> base.map { it +directionOffset }.toSet()
+//                }
             }
         }
 
