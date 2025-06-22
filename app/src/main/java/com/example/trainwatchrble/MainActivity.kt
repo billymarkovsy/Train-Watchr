@@ -138,8 +138,11 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun sendDataToServer() {
-        if (::bluetoothDevice.isInitialized)
+        if (::bluetoothDevice.isInitialized) {
             bluetoothGatt = bluetoothDevice.connectGatt(this, true, leGattCallback)
+            val test = bluetoothGatt.requestMtu(30)
+            Log.i("BLE", test.toString())
+        }
         else
             Log.i("BLE", "Unable to connect Bluetooth device")
     }
