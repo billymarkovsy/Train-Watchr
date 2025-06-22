@@ -140,8 +140,6 @@ class MainActivity : AppCompatActivity() {
     private fun sendDataToServer() {
         if (::bluetoothDevice.isInitialized) {
             bluetoothGatt = bluetoothDevice.connectGatt(this, true, leGattCallback)
-            val test = bluetoothGatt.requestMtu(30)
-            Log.i("BLE", test.toString())
         }
         else
             Log.i("BLE", "Unable to connect Bluetooth device")
@@ -170,9 +168,16 @@ class MainActivity : AppCompatActivity() {
 
     private val leGattCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
 
+        override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
+            super.onMtuChanged(gatt, mtu, status)
+            Log.i("BLE", "MTU size $mtu, status: $status")
+        }
+
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
+            val test = gatt?.requestMtu(517)
+            Log.i("BLE", "Change MTU size: ${test.toString()}")
             Log.i("BLE", "Connected")
             scanning = false
             if(newState == BluetoothProfile.STATE_CONNECTED){
