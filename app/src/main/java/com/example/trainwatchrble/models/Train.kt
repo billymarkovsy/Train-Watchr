@@ -14,7 +14,11 @@ import com.google.transit.realtime.GtfsRealtime.VehiclePosition.VehicleStopStatu
 data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val routeId: String, val directionId: Int) {
 
     val truncatedRouteId: String
-        get() = routeId.split("-")[0]
+        get() {
+            if (routeId == Constants.MATTAPAN_LINE)
+                return Constants.RED_LINE
+            return routeId.split("-")[0]
+        }
 
     fun getChipLEDId(): Set<Int>{
         return when(truncatedRouteId){
@@ -147,7 +151,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                 }
                 "70154" -> setOf(COPLEY_NORTH.led)
                 "70152" -> setOf(HYNES_NORTH.led)
-                "70150" -> setOf(KENMORE_NORTH.led)
+                "70150", "71151" -> setOf(KENMORE_NORTH.led)
 
                 "70512" -> setOf(MEDFORD_TUFTS_SOUTH.led)
                 "70510" -> when(stopStatus) {
@@ -190,7 +194,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                     STOPPED_AT -> setOf(GOVCENTGREEN_SOUTH.led)
                     IN_TRANSIT_TO, INCOMING_AT -> setOf(HAYMARKETGREEN_TO_GOVCENTGREEN.led)
                 }
-                "70196", "70197", "70198", "70199" -> when(stopStatus) {
+                "70196", "70197", "70198", "70199", "71199" -> when(stopStatus) {
                     STOPPED_AT -> setOf(PARKSTGREEN_SOUTH.led)
                     IN_TRANSIT_TO, INCOMING_AT -> setOf(GOVCENTGREEN_TO_PARKST.led) //TODO: review the incoming-at values for park st
                 }
@@ -207,7 +211,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                     IN_TRANSIT_TO, INCOMING_AT -> setOf(ARLINGTON_TO_COPLEY.led)
                 }
                 "70153" -> setOf(HYNES_SOUTH.led)
-                "70151" -> when(stopStatus){
+                "70151", "71151" -> when(stopStatus){
                     STOPPED_AT -> setOf(KENMORE_SOUTH.led)
                     IN_TRANSIT_TO, INCOMING_AT -> setOf(FENWAY_TO_KENMORE.led)
                 }
@@ -476,7 +480,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
 
             val base: Set<Int> = when(stopId) {
 
-                "70838" -> setOf(BOWDOIN_WEST.led, BOWDOIN_EAST.led)
+                "70838" -> setOf(BOWDOIN_WEST.led)
                 "70039" -> setOf(GOVT_CENTER_WEST.led)
                 "70041" -> setOf(STATE_WEST.led)
                 "70043" -> setOf(AQUARIUM_WEST.led)
@@ -489,6 +493,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                 "70057" -> setOf(REVERE_BEACH_WEST.led)
                 "70059" -> setOf(WONDERLAND_WEST.led)
 
+                "70038" -> setOf(BOWDOIN_EAST.led)
                 "70040" -> setOf(GOVT_CENTER_EAST.led)
                 "70042" -> setOf(STATE_EAST.led)
                 "70044" -> setOf(AQUARIUM_EAST.led)
