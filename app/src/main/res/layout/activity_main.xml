@@ -8,11 +8,21 @@
     tools:context=".MainActivity">
 
     <Button
+        android:id="@+id/serverDisconnectButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/disconnect_from_trainwatchr_server"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/serverDataButton" />
+
+    <Button
         android:id="@+id/serverConnectButton"
         android:layout_width="261dp"
         android:layout_height="45dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="560dp"
+        android:layout_marginTop="468dp"
         android:text="@string/connect_to_trainwatchr_server"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -43,11 +53,12 @@
         style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.319"
         app:layout_constraintStart_toEndOf="@+id/serverDataButton"
-        app:layout_constraintTop_toTopOf="@+id/serverDataButton" />
+        app:layout_constraintTop_toBottomOf="@+id/serverConnectProgressBar" />
 
     <ImageView
         android:id="@+id/serverConnectStatus"
@@ -57,14 +68,5 @@
         app:layout_constraintStart_toEndOf="@+id/serverConnectButton"
         app:layout_constraintTop_toTopOf="@+id/serverConnectButton"
         app:srcCompat="@mipmap/red_x" />
-
-    <ImageView
-        android:id="@+id/serverDataStatus"
-        android:layout_width="48dp"
-        android:layout_height="49dp"
-        android:layout_marginStart="80dp"
-        app:layout_constraintStart_toEndOf="@+id/serverDataButton"
-        app:layout_constraintTop_toTopOf="@+id/serverDataButton"
-        app:srcCompat="@android:drawable/presence_online" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
