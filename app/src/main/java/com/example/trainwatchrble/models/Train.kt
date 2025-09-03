@@ -66,8 +66,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
         private fun mapToByteArray(stationCount: Int, stationIndices: Set<Int>): ByteArray{
             val roundedByteCount: Int = Constants.toNearestMultipleOf8(stationCount)
             val byteArrayLength: Int = roundedByteCount/8
-            Log.i("BLE", "ByteCount: $roundedByteCount | ArrayLength: $byteArrayLength")
-            //var result = 0b0
+            Log.d("BLE", "ByteCount: $roundedByteCount | ArrayLength: $byteArrayLength")
             val result: Array<Int> = Array(byteArrayLength) { 0 }
             for (i in 0 until roundedByteCount){
                 if(stationIndices.contains(i)){
@@ -78,7 +77,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                     Log.d("BLE", "Result: ${result[index]}")
                 }
             }
-            Log.i("BLE", "Bit array: ${result.toList()}")
+            Log.d("BLE", "Bit array: ${result.toList()}")
             return result.map { it.toByte() }.toByteArray()
         }
 
@@ -133,7 +132,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                     STOPPED_AT -> setOf(HAYMARKETGREEN_NORTH.led)
                     IN_TRANSIT_TO, INCOMING_AT -> setOf(GOVCENTGREEN_TO_HAYMARKETGREEN.led)
                 }
-                "70201" -> when(stopStatus) {
+                "70201", "Government Center-Brattle" -> when(stopStatus) {
                     STOPPED_AT -> setOf(GOVCENTGREEN_NORTH.led)
                     IN_TRANSIT_TO, INCOMING_AT -> setOf(PARKSTGREEN_TO_GOVCENTGREEN.led)
                 }
@@ -211,7 +210,7 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                     IN_TRANSIT_TO, INCOMING_AT -> setOf(ARLINGTON_TO_COPLEY.led)
                 }
                 "70153" -> setOf(HYNES_SOUTH.led)
-                "70151", "71151" -> when(stopStatus){
+                "70151", "71150" -> when(stopStatus){
                     STOPPED_AT -> setOf(KENMORE_SOUTH.led)
                     IN_TRANSIT_TO, INCOMING_AT -> setOf(FENWAY_TO_KENMORE.led)
                 }

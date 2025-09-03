@@ -2,6 +2,7 @@ package com.example.trainwatchrble.intents
 
 import android.Manifest
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.util.Log
 import androidx.annotation.RequiresPermission
@@ -18,13 +19,29 @@ import java.util.Queue
 import java.util.UUID
 
 class BLEWorker(appContext: Context, workerParams: WorkerParameters): Worker(appContext, workerParams) {
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    @RequiresPermission(allOf=[Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     override fun doWork(): Result {
         BluetoothWrapper.enableLoop()
+        val leScanCallback = BluetoothWrapper.scanCallback(
+            {
+                Log.i("BLE", "Found TrainWatchr Server!")
+                BluetoothWrapper.initializeGatt(applicationContext)
+            },
+            { }
+        )
         while (BluetoothWrapper.getRunning()) {
-            val trains: List<Train> = TrainWorker.fetchTrains()
-            processTrains(trains)
-            Thread.sleep(Constants.TRAIN_DATA_REFRESH)
+            BluetoothWrapper.initializeBLEManager(applicationContext.getSystemService(BluetoothManager::class.java)) {
+                Log.i("BLE", "Unable to connect to bluetooth in worker2")
+            }
+            if(BluetoothWrapper.bluetoothDevice == null){
+                BluetoothWrapper.bluetoothLeScanner.startScan(leScanCallback)
+                Thread.sleep(Constants.BLE_SCAN_PERIOD)
+                BluetoothWrapper.bluetoothLeScanner.stopScan(leScanCallback)
+            } else {
+                val trains: List<Train> = TrainWorker.fetchTrains()
+                processTrains(trains)
+                Thread.sleep(Constants.TRAIN_DATA_REFRESH)
+            }
         }
         return Result.success()
     }
@@ -67,14 +84,11 @@ class BLEWorker(appContext: Context, workerParams: WorkerParameters): Worker(app
 
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         private fun writeData(lineCharacteristic: TrainWatchrCharacteristic) {
-            Log.i("BLE", BluetoothWrapper.bluetoothGatt.services.toString())
-            val service = BluetoothWrapper.bluetoothGatt.getService(UUID.fromString(Constants.SERVER_ID))
-            Log.i("BLE", service.toString())
+            val service = BluetoothWrapper.bluetoothGatt!!.getService(UUID.fromString(Constants.SERVER_ID))
             val characteristic: BluetoothGattCharacteristic? = service?.getCharacteristic(lineCharacteristic.uuid)
             val data = lineCharacteristic.data
             Log.i("BLE", "Writing following data for ${lineCharacteristic.name}: ${data.map { it.toInt() }}")
-            Log.i("BLE", (characteristic == null).toString())
-            val res = BluetoothWrapper.bluetoothGatt.writeCharacteristic(characteristic!!, data,
+            val res = BluetoothWrapper.bluetoothGatt!!.writeCharacteristic(characteristic!!, data,
                 BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
             Log.i("BLE", "Status response: $res")
         }

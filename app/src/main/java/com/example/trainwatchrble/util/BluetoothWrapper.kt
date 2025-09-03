@@ -1,11 +1,16 @@
 package com.example.trainwatchrble.util
 
 import android.Manifest
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
+import android.bluetooth.le.BluetoothLeScanner
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.util.Log
 import androidx.annotation.RequiresPermission
@@ -16,26 +21,56 @@ import com.example.trainwatchrble.intents.BLEWorker
 
 object BluetoothWrapper {
 
-    lateinit var bluetoothDevice: BluetoothDevice
-    lateinit var bluetoothGatt: BluetoothGatt
+    var bluetoothManager: BluetoothManager? = null
+    lateinit var bluetoothAdapter: BluetoothAdapter
+    lateinit var bluetoothLeScanner: BluetoothLeScanner
+    var bluetoothDevice: BluetoothDevice? = null
+    var bluetoothGatt: BluetoothGatt? = null
 
-    var deviceInitialized = false
-    var gattInitialized = false
+    fun initializeBLEManager(manager: BluetoothManager, bluetoothDisabledCallback: () -> Unit) {
+        if (bluetoothManager == null){
+            bluetoothManager = manager
+            bluetoothAdapter = bluetoothManager!!.adapter
+        }
+
+        if (bluetoothAdapter.isEnabled && !::bluetoothLeScanner.isInitialized) {
+            bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
+        }
+        if(!::bluetoothLeScanner.isInitialized){
+            bluetoothDisabledCallback()
+        }
+    }
+
     private var running = true
 
     fun getRunning(): Boolean { return running }
 
     fun enableLoop() { running = true }
 
-    fun initializeDevice(device: BluetoothDevice) {
-        bluetoothDevice = device
-        deviceInitialized = true
+    fun scanCallback(foundCB: () -> Unit, missedCB: () -> Unit): ScanCallback{
+       return object : ScanCallback() {
+
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                super.onScanResult(callbackType, result)
+                if (bluetoothDevice != null)
+                    return
+                Log.d("BLE", result.device.name ?: "")
+                if (result.device.name == Constants.TRAIN_WATCHR_DEVICE_NAME) {
+                    if (bluetoothDevice == null)
+                        bluetoothDevice = result.device
+                    foundCB()
+                }
+                else {
+                    missedCB()
+                }
+            }
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun initializeGatt(context: Context) {
-        bluetoothGatt = bluetoothDevice.connectGatt(context, true, leGattCallback)
-        gattInitialized = true
+        bluetoothGatt = bluetoothDevice!!.connectGatt(context, true, leGattCallback)
     }
 
     fun disconnect() {
@@ -54,8 +89,7 @@ object BluetoothWrapper {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
             val test = gatt?.requestMtu(517)
-            Log.i("BLE", "Change MTU size: ${test.toString()}")
-            Log.i("BLE", "Connected")
+            Log.d("BLE", "Change MTU size: ${test.toString()}")
             if(newState == BluetoothProfile.STATE_CONNECTED){
                 Log.i("BLE", "Connected")
                 gatt?.discoverServices()
