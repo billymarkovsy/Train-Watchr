@@ -1,8 +1,15 @@
 package com.example.trainwatchrble
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCallback
+import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.ScanCallback
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
@@ -12,6 +19,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresPermission
@@ -19,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.trainwatchrble.service.BLEService
 import com.example.trainwatchrble.util.BluetoothWrapper
 import com.example.trainwatchrble.util.Constants
 import com.google.android.material.snackbar.Snackbar
@@ -31,6 +40,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sendDataToServerLoader: ProgressBar
     private lateinit var connectToServerStatus: ImageView
     private lateinit var disconnectFromServerButton: Button
+
+    private lateinit var bleServiceIntent: Intent
 
     //@android:drawable/ic_delete
     //@android:drawable/presence_online
@@ -91,6 +102,8 @@ class MainActivity : AppCompatActivity() {
 
         checkAndRequestPermission(arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN))
 
+        bleServiceIntent = Intent(this, BLEService::class.java)
+
         BluetoothWrapper.initializeBLEManager(getSystemService(BluetoothManager::class.java), bluetoothOffSnackBar::show)
         BluetoothWrapper.disconnect()
 
@@ -109,14 +122,18 @@ class MainActivity : AppCompatActivity() {
 
         connectToServerButton.setOnClickListener { _ ->
             BluetoothWrapper.initializeBLEManager(getSystemService(BluetoothManager::class.java), bluetoothOffSnackBar::show)
-            connectToServer()
+            if(BluetoothWrapper.bluetoothAdapter != null && BluetoothWrapper.bluetoothAdapter!!.isEnabled)
+                connectToServer()
+            else
+                Toast.makeText(this, "Please enable bluetooth before continuing", LENGTH_SHORT).show()
         }
 
         sendDataToServerButton.setOnClickListener { _ ->
 
             if (checkPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
                 if (BluetoothWrapper.bluetoothDevice != null) {
-                    BluetoothWrapper.initializeGatt(this)
+                    BluetoothWrapper.bluetoothGatt = BluetoothWrapper.bluetoothDevice!!.connectGatt(this, true, leGattCallback)
+                    //BluetoothWrapper.initializeGatt(this)
                     disconnectFromServerButton.isEnabled = true
                     sendDataToServerLoader.visibility = View.VISIBLE
                 } else
@@ -129,9 +146,18 @@ class MainActivity : AppCompatActivity() {
 
         disconnectFromServerButton.setOnClickListener { _ ->
             BluetoothWrapper.disconnect()
+            stopService(bleServiceIntent)
             disconnectFromServerButton.isEnabled = false
             sendDataToServerLoader.visibility = View.INVISIBLE
         }
+
+        val channelName = getString(R.string.notification_channel_name)
+        val mChannel = NotificationChannel(channelName, channelName, NotificationManager.IMPORTANCE_DEFAULT).apply {
+            description = "Channel for the BLE Service to start syncing data"
+            setShowBadge(true)
+        }
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(mChannel)
     }
 
     private fun connectToServer() {
@@ -179,4 +205,43 @@ class MainActivity : AppCompatActivity() {
             bluetoothDisabledSnackBar.show()
         }
     }
+
+    private val leGattCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
+
+        override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
+            super.onMtuChanged(gatt, mtu, status)
+            Log.i("BLE", "MTU size $mtu, status: $status")
+        }
+
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+            super.onConnectionStateChange(gatt, status, newState)
+            val test = gatt?.requestMtu(517)
+            Log.d("BLE", "Change MTU size: ${test.toString()}")
+            if(newState == BluetoothProfile.STATE_CONNECTED){
+                Log.i("BLE", "Connected")
+                gatt?.discoverServices()
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED){
+                Log.i("BLE", "Disconnected")
+                BluetoothWrapper.disconnect()
+            }
+        }
+
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+            super.onServicesDiscovered(BluetoothWrapper.bluetoothGatt, status)
+
+            startService(bleServiceIntent)
+        }
+
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        override fun onCharacteristicWrite(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic?,
+            status: Int
+        ) {
+            BLEService.pollData()
+        }
+    }
+
 }
