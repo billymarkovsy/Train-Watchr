@@ -511,15 +511,13 @@ data class Train(val stopId: String, val stopStatus: VehicleStopStatus, val rout
                 }
             }
 
+            if(base.contains(WONDERLAND_WEST.led)){
+                return base
+            }
+
             return when(stopStatus){
                 STOPPED_AT -> base
                 IN_TRANSIT_TO, INCOMING_AT -> base.map { it + directionOffset }.toSet()
-//                IN_TRANSIT_TO, INCOMING_AT -> when(stopId){
-//                    //TODO: only set one of them off
-//                    "70045" -> return setOf(MAVERICK_WEST.led+1, MAVERICK_WEST.led+2)
-//                    "70044" -> return setOf(AQUARIUM_EAST.led-1, AQUARIUM_EAST.led-2)
-//                    else -> base.map { it +directionOffset }.toSet()
-//                }
             }
         }
 
